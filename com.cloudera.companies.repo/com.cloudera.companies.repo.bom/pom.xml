@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.cloudera.companies.repo</groupId>
-	<artifactId>com.cloudera.companies.repo.boms</artifactId>
+	<artifactId>com.cloudera.companies.repo.bom</artifactId>
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -14,9 +14,10 @@
 	</parent>
 
 	<modules>
-		<module>com.cloudera.companies.repo.boms.hadoop</module>
-		<module>com.cloudera.companies.repo.boms.hive</module>
-		<module>com.cloudera.companies.repo.boms.pig</module>
+	    <module>com.cloudera.companies.repo.bom.hadoop</module>
+    	<module>com.cloudera.companies.repo.bom.hbase</module>
+		<module>com.cloudera.companies.repo.bom.hive</module>
+		<module>com.cloudera.companies.repo.bom.pig</module>
 	</modules>
 
 </project>

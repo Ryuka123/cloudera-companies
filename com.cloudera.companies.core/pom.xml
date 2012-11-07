@@ -26,4 +26,12 @@
 		<module>com.cloudera.companies.core.test</module>
 	</modules>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.cloudera.companies.repo</groupId>
+			<artifactId>com.cloudera.companies.repo.m2</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	</dependencies>
+
 </project>
