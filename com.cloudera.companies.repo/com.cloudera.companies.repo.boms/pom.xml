@@ -4,7 +4,7 @@
 
 	<groupId>com.cloudera.companies.repo</groupId>
 	<artifactId>com.cloudera.companies.repo.boms</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<parent>
@@ -12,5 +12,11 @@
 		<artifactId>com.cloudera.companies.repo</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
+
+	<modules>
+		<module>com.cloudera.companies.repo.boms.hadoop</module>
+		<module>com.cloudera.companies.repo.boms.hive</module>
+		<module>com.cloudera.companies.repo.boms.pig</module>
+	</modules>
 
 </project>
