@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.cloudera.companies</groupId>
+	<artifactId>com.cloudera.companies.core</artifactId>
+	<packaging>pom</packaging>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<parent>
+		<groupId>com.cloudera</groupId>
+		<artifactId>com.cloudera.companies</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<modules>
+		<module>com.cloudera.companies.core.etl</module>
+		<module>com.cloudera.companies.core.etl.hdfs</module>
+		<module>com.cloudera.companies.core.etl.hive</module>
+		<module>com.cloudera.companies.core.etl.hbase</module>
+		<module>com.cloudera.companies.core.query</module>
+		<module>com.cloudera.companies.core.query.pig</module>
+		<module>com.cloudera.companies.core.query.hive</module>
+		<module>com.cloudera.companies.core.query.impala</module>
+		<module>com.cloudera.companies.core.assembly</module>
+		<module>com.cloudera.companies.core.test</module>
+	</modules>
+
+</project>
