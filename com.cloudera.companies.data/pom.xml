@@ -4,7 +4,7 @@
 
 	<groupId>com.cloudera.companies</groupId>
 	<artifactId>com.cloudera.companies.data</artifactId>
-	<packaging>pom</packaging>
+	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<parent>
@@ -13,9 +13,30 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<modules>
-		<module>com.cloudera.companies.data.sample</module>
-		<module>com.cloudera.companies.data.warehouse</module>
-	</modules>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>prepare</id>
+						<phase>validate</phase>
+						<configuration>
+							<target>
+								<echo message="Downloading data files" />
+								<exec executable="src/data/basiccompany/bin/download.sh">
+									<arg value="src/data/basiccompany" />
+								</exec>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>
