@@ -14,14 +14,8 @@
 	</parent>
 
 	<modules>
-		<module>com.cloudera.companies.core.etl</module>
-		<module>com.cloudera.companies.core.etl.hdfs</module>
-		<module>com.cloudera.companies.core.etl.hive</module>
-		<module>com.cloudera.companies.core.etl.hbase</module>
+		<module>com.cloudera.companies.core.ingest</module>
 		<module>com.cloudera.companies.core.query</module>
-		<module>com.cloudera.companies.core.query.pig</module>
-		<module>com.cloudera.companies.core.query.hive</module>
-		<module>com.cloudera.companies.core.query.impala</module>
 		<module>com.cloudera.companies.core.assembly</module>
 		<module>com.cloudera.companies.core.test</module>
 	</modules>
