@@ -2,20 +2,20 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.cloudera.companies.repo</groupId>
-	<artifactId>com.cloudera.companies.repo.bom</artifactId>
+	<groupId>com.cloudera.companies.repo.bom</groupId>
+	<artifactId>com.cloudera.companies.repo.bom.cdh</artifactId>
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<parent>
-		<groupId>com.cloudera.companies</groupId>
-		<artifactId>com.cloudera.companies.repo</artifactId>
+		<groupId>com.cloudera.companies.repo</groupId>
+		<artifactId>com.cloudera.companies.repo.bom</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
 	<modules>
-	    <module>com.cloudera.companies.repo.bom.log</module>
-	    <module>com.cloudera.companies.repo.bom.cdh</module>
+	    <module>com.cloudera.companies.repo.bom.cdh.client</module>
+	    <module>com.cloudera.companies.repo.bom.cdh.runtime</module>
 	</modules>
 
 </project>
