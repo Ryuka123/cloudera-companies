@@ -14,6 +14,7 @@
 	</parent>
 
 	<modules>
+		<module>com.cloudera.companies.core.common</module>
 		<module>com.cloudera.companies.core.ingest</module>
 		<module>com.cloudera.companies.core.query</module>
 		<module>com.cloudera.companies.core.assembly</module>
@@ -25,6 +26,20 @@
 			<groupId>com.cloudera.companies.repo</groupId>
 			<artifactId>com.cloudera.companies.repo.m2</artifactId>
 			<version>${project.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.mrunit</groupId>
+			<artifactId>mrunit</artifactId>
+			<version>${mrunit.version}</version>
+			<classifier>hadoop2</classifier>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

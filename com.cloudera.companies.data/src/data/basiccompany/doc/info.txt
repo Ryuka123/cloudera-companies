@@ -21,3 +21,8 @@ Up-to-date company information can be obtained by following the URI links in the
 If files are viewed with Microsoft Excel, it is recommended that you use version 2007 or later.
 
 http://download.companieshouse.gov.uk/en_output.html
+
+Policy on Company Names:
+
+http://www.companieshouse.gov.uk/about/gbhtml/gp1.shtml#ch6
+http://www.legislation.gov.uk/uksi/2009/1085/contents/made

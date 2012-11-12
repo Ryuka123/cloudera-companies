@@ -18,6 +18,7 @@
     	<module>com.cloudera.companies.repo.bom.hbase</module>
 		<module>com.cloudera.companies.repo.bom.hive</module>
 		<module>com.cloudera.companies.repo.bom.pig</module>
+	    <module>com.cloudera.companies.repo.bom.log</module>
 	</modules>
 
 </project>

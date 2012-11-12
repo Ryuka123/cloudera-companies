@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.cloudera.companies.core</groupId>
-	<artifactId>com.cloudera.companies.core.ingest</artifactId>
+	<artifactId>com.cloudera.companies.core.common</artifactId>
 	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -15,11 +15,6 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.cloudera.companies.core</groupId>
-			<artifactId>com.cloudera.companies.core.common</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.cloudera.companies.repo.bom</groupId>
 			<artifactId>com.cloudera.companies.repo.bom.hadoop</artifactId>
 			<version>${project.version}</version>
@@ -30,6 +25,11 @@
 			<artifactId>com.cloudera.companies.repo.bom.log</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>${opencsv.version}</version>
 		</dependency>
 	</dependencies>
 
