@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.common;
+package com.cloudera.companies.core.test;
 
 import java.io.IOException;
 

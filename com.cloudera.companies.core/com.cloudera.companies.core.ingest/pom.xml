@@ -32,10 +32,29 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
+			<groupId>com.cloudera.companies.core</groupId>
+			<artifactId>com.cloudera.companies.core.test</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudera.companies.repo.bom.cdh.runtime</groupId>
 			<artifactId>com.cloudera.companies.repo.bom.cdh.runtime.core</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.mrunit</groupId>
+			<artifactId>mrunit</artifactId>
+			<version>${mrunit.version}</version>
+			<classifier>hadoop2</classifier>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

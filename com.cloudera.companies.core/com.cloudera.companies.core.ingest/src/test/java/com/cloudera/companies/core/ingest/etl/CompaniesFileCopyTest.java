@@ -2,7 +2,7 @@ package com.cloudera.companies.core.ingest.etl;
 
 import java.io.IOException;
 
-import com.cloudera.companies.core.common.CompaniesCDHTestCase;
+import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
 public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 

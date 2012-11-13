@@ -13,4 +13,30 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
+	<dependencies>
+		<dependency>
+			<groupId>com.cloudera.companies.repo.bom</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.log</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudera.companies.repo.bom.cdh.client</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.cdh.client.core</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudera.companies.repo.bom.cdh.runtime</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.cdh.runtime.core</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+		</dependency>
+	</dependencies>
+
 </project>
