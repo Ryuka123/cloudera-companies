@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import au.com.bytecode.opencsv.CSVParser;
 
-public class CompanyRecordParser {
+public class CompaniesRecordParser {
 
 	private static final CSVParser CSV_PARSER = new CSVParser(',', '"', '\\', true, true);
 

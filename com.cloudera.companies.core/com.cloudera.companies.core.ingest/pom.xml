@@ -20,6 +20,18 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.cloudera.companies.repo.bom</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.log</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudera.companies.repo.bom.cdh.client</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.cdh.client.core</artifactId>
+			<version>${project.version}</version>
+			<type>pom</type>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudera.companies.repo.bom.cdh.runtime</groupId>
 			<artifactId>com.cloudera.companies.repo.bom.cdh.runtime.core</artifactId>
 			<version>${project.version}</version>
@@ -27,35 +39,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>resource-dependencies</id>
-						<phase>process-test-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.apache.hadoop</groupId>
-									<artifactId>hadoop-dist</artifactId>
-									<version>${hadoop.version}</version>
-									<type>tar.gz</type>
-									<outputDirectory>target/${project.runtime-test-dir}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-							<skip>${maven.test.skip}</skip>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>

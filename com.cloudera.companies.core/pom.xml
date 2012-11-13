@@ -19,6 +19,8 @@
 		<module>com.cloudera.companies.core.query</module>
 		<module>com.cloudera.companies.core.assembly</module>
 		<module>com.cloudera.companies.core.test</module>
+		<module>com.cloudera.companies.core.test.local</module>
+		<module>com.cloudera.companies.core.test.remote</module>
 	</modules>
 
 	<dependencies>

@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import com.cloudera.companies.core.ingest.etl.CompanyDataSetETLDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.etl.CompaniesETLDriver.RecordCounter;
 
-public class CompanyDataSetETLMapper extends Mapper<Text, Text, Text, Text> {
+public class CompaniesETLMapper extends Mapper<Text, Text, Text, Text> {
 
 	@Override
 	protected void map(Text key, Text value, Context context) throws IOException, InterruptedException {

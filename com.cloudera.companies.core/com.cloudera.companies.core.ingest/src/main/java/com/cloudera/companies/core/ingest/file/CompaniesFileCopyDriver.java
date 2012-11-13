@@ -11,12 +11,12 @@ import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cloudera.companies.core.common.CompanyDriver;
+import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
 
-public class CompanyDataSetFileCopyDriver extends CompanyDriver {
+public class CompaniesFileCopyDriver extends CompaniesDriver {
 
-	private static Logger log = LoggerFactory.getLogger(CompanyDataSetFileCopyDriver.class);
+	private static Logger log = LoggerFactory.getLogger(CompaniesFileCopyDriver.class);
 
 	private static final int RETURN_SUCCESS = 0;
 	private static final int RETURN_FAILURE_MISSING_ARGS = 1;
@@ -26,7 +26,7 @@ public class CompanyDataSetFileCopyDriver extends CompanyDriver {
 	public int run(String[] args) throws Exception {
 
 		if (args.length != 2) {
-			System.err.println("Usage: " + CompanyDataSetFileCopyDriver.class.getSimpleName()
+			System.err.println("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
 					+ " [generic options] <local-dir> <hdfs-dir>");
 			ToolRunner.printGenericCommandUsage(System.err);
 			return RETURN_FAILURE_MISSING_ARGS;
@@ -55,6 +55,6 @@ public class CompanyDataSetFileCopyDriver extends CompanyDriver {
 	}
 
 	public static void main(String[] args) throws Exception {
-		System.exit(ToolRunner.run(new CompanyDataSetFileCopyDriver(), args));
+		System.exit(ToolRunner.run(new CompaniesFileCopyDriver(), args));
 	}
 }

@@ -8,9 +8,9 @@ import org.apache.hadoop.util.Tool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class CompanyDriver extends Configured implements Tool {
+public abstract class CompaniesDriver extends Configured implements Tool {
 
-	private static Logger log = LoggerFactory.getLogger(CompanyDriver.class);
+	private static Logger log = LoggerFactory.getLogger(CompaniesDriver.class);
 
 	@Override
 	public void setConf(Configuration conf) {
