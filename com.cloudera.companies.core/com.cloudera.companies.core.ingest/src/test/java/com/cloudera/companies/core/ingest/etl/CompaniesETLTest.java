@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.file;
+package com.cloudera.companies.core.ingest.etl;
 
 import java.io.IOException;
 
@@ -7,8 +7,6 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 
-import com.cloudera.companies.core.ingest.etl.CompaniesETLMapper;
-import com.cloudera.companies.core.ingest.etl.CompaniesETLReducer;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
 public class CompaniesETLTest extends CompaniesCDHTestCase {

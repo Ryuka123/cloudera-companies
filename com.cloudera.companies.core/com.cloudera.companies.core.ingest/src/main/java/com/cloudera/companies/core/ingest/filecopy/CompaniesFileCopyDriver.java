@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.file;
+package com.cloudera.companies.core.ingest.filecopy;
 
 import java.io.File;
 
@@ -18,21 +18,21 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 
 	private static Logger log = LoggerFactory.getLogger(CompaniesFileCopyDriver.class);
 
-	private static final int RETURN_SUCCESS = 0;
-	private static final int RETURN_FAILURE_MISSING_ARGS = 1;
-	private static final int RETURN_FAILURE_INVALID_ARGS = 2;
+	public static final int RETURN_SUCCESS = 0;
+	public static final int RETURN_FAILURE_MISSING_ARGS = 1;
+	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
 
 	@Override
 	public int run(String[] args) throws Exception {
 
-		if (args.length != 2) {
+		if (args == null || args.length != 2) {
 			System.err.println("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
 					+ " [generic options] <local-dir> <hdfs-dir>");
 			ToolRunner.printGenericCommandUsage(System.err);
 			return RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		File localDir = new File(args[1]);
+		File localDir = new File(args[0]);
 		if (!localDir.exists() || !localDir.isDirectory() || !localDir.canRead()) {
 			System.err.println("Error: local directory '" + args[1] + "' is not available");
 			return RETURN_FAILURE_INVALID_ARGS;
