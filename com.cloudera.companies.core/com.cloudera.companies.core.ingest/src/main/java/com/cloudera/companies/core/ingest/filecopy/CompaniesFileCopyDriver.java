@@ -33,18 +33,33 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		}
 
 		File localDir = new File(args[0]);
-		if (!localDir.exists() || !localDir.isDirectory() || !localDir.canRead()) {
-			System.err.println("Error: Local directory '" + args[0] + "' is not available");
+		if (!localDir.exists()) {
+			System.err.println("Error: Local directory '" + args[0] + "' does not exist");
+			return RETURN_FAILURE_INVALID_ARGS;
+		}
+		if (!localDir.isDirectory()) {
+			System.err.println("Error: Local directory '" + args[0] + "' is of incorrect type");
+			return RETURN_FAILURE_INVALID_ARGS;
+		}
+		if (!localDir.canExecute()) {
+			System.err.println("Error: Local directory '" + args[0]
+					+ "' has too restrictive permissions to read as user '"
+					+ UserGroupInformation.getCurrentUser().getUserName() + "'");
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 
 		Path hdfsDir = new Path(args[1]);
 		FileSystem hdfs = FileSystem.get(getConf());
 		if (hdfs.exists(hdfsDir)) {
-			if (!hdfs.isDirectory(hdfsDir)
-					|| HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
-							UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.EXECUTE)) {
-				System.err.println("Error: HDFS directory '" + args[1] + "' is not available");
+			if (!hdfs.isDirectory(hdfsDir)) {
+				System.err.println("Error: HDFS directory '" + args[1] + "' is of incorrect type");
+				return RETURN_FAILURE_INVALID_ARGS;
+			}
+			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
+					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.ALL)) {
+				System.err.println("Error: HDFS directory '" + args[1]
+						+ "' has too restrictive permissions to read/write as user '"
+						+ UserGroupInformation.getCurrentUser().getUserName() + "'");
 				return RETURN_FAILURE_INVALID_ARGS;
 			}
 		} else {

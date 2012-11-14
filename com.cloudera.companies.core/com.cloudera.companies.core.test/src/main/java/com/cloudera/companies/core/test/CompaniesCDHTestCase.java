@@ -21,6 +21,8 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	public CompaniesCDHTestCase() throws IOException {
 		super(HadoopTestCase.LOCAL_MR, HadoopTestCase.LOCAL_FS, 2, 2);
+		System.setProperty("java.security.krb5.realm", "CDHCLUSTER.com");
+		System.setProperty("java.security.krb5.kdc", "kdc.cdhcluster.com");
 	}
 
 	public String getPathLocal(String pathRelativeToModuleRoot) {
@@ -41,6 +43,7 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 		super.setUp();
 		FileSystem fileSystem = getFileSystem();
 		if (fileSystem != null) {
+			fileSystem.delete(HDFS_PATH, true);
 			fileSystem.mkdirs(HDFS_PATH);
 			fileSystem.mkdirs(HDFS_PATH_TMP);
 			fileSystem.setPermission(HDFS_PATH_TMP, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
@@ -49,10 +52,6 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		FileSystem fileSystem = getFileSystem();
-		if (fileSystem != null) {
-			fileSystem.delete(HDFS_PATH, true);
-		}
 		super.tearDown();
 	}
 

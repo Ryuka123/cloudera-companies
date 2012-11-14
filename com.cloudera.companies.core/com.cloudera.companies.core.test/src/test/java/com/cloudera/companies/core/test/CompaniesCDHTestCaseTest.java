@@ -5,6 +5,9 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 
 	public CompaniesCDHTestCaseTest() throws IOException {
@@ -35,4 +38,9 @@ public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 		Assert.assertEquals(localDir + "/tmp/tmp", getPathLocal("///tmp//tmp"));
 	}
 
+	public void testFileSystem() throws IOException {
+		String someDir = getPathHDFS("/some_dir");
+		Assert.assertTrue(FileSystem.get(getFileSystem().getConf()).mkdirs(new Path(someDir)));
+		Assert.assertTrue(new File(getPathLocal(someDir)).exists());
+	}
 }
