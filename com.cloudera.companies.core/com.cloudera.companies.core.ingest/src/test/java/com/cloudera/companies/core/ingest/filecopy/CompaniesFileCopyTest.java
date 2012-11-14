@@ -20,8 +20,14 @@ public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_MISSING_ARGS,
 				new CompaniesFileCopyDriver().run(new String[] {}));
 		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_MISSING_ARGS,
-				new CompaniesFileCopyDriver().run(new String[] { "/tmp" }));
+				new CompaniesFileCopyDriver().run(new String[] { getPathLocal("") }));
+		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_MISSING_ARGS,
+				new CompaniesFileCopyDriver().run(new String[] { getPathLocal("pom.xml") }));
 		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-				new CompaniesFileCopyDriver().run(new String[] { "/some_dir_that_does_not_exist", "/tmp" }));
+				new CompaniesFileCopyDriver().run(new String[] { getPathLocal("pom.xml"), getPathHDFS("tmp") }));
+		Assert.assertEquals(
+				CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+				new CompaniesFileCopyDriver().run(new String[] { getPathLocal("/some_dir_that_does_not_exist"),
+						getPathHDFS("tmp") }));
 	}
 }

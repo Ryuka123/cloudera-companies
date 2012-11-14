@@ -34,7 +34,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 
 		File localDir = new File(args[0]);
 		if (!localDir.exists() || !localDir.isDirectory() || !localDir.canRead()) {
-			System.err.println("Error: local directory '" + args[1] + "' is not available");
+			System.err.println("Error: Local directory '" + args[0] + "' is not available");
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 
@@ -44,7 +44,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			if (!hdfs.isDirectory(hdfsDir)
 					|| HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
 							UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.EXECUTE)) {
-				System.err.println("Error: hdfs directory '" + args[2] + "' is not available");
+				System.err.println("Error: HDFS directory '" + args[1] + "' is not available");
 				return RETURN_FAILURE_INVALID_ARGS;
 			}
 		} else {

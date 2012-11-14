@@ -23,14 +23,15 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 		super(HadoopTestCase.LOCAL_MR, HadoopTestCase.LOCAL_FS, 2, 2);
 	}
 
-	public String getPathLocal(String path) {
-		return path == null || path.equals("") ? (LOCAL_DIR.length() < 2 ? "/" : LOCAL_DIR.substring(0,
-				LOCAL_DIR.length() - 2)) : new Path(LOCAL_DIR, stripLeadingSlashes(path)).toUri().toString();
+	public String getPathLocal(String relativeToModuleRootPath) {
+		return relativeToModuleRootPath == null || relativeToModuleRootPath.equals("") ? (LOCAL_DIR.length() < 2 ? "/"
+				: LOCAL_DIR.substring(0, LOCAL_DIR.length() - 2)) : new Path(LOCAL_DIR,
+				stripLeadingSlashes(relativeToModuleRootPath)).toUri().toString();
 	}
 
-	public String getPathHDFS(String path) {
-		return path == null || path.equals("") ? HDFS_DIR : new Path(HDFS_PATH, stripLeadingSlashes(path)).toUri()
-				.toString();
+	public String getPathHDFS(String relativeToHDFSRootPath) {
+		return relativeToHDFSRootPath == null || relativeToHDFSRootPath.equals("") ? HDFS_DIR : new Path(HDFS_PATH,
+				stripLeadingSlashes(relativeToHDFSRootPath)).toUri().toString();
 	}
 
 	@Override

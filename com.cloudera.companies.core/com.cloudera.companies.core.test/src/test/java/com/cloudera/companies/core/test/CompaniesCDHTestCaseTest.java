@@ -14,6 +14,8 @@ public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 	public void testPathHDFS() {
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS(null));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS(""));
+		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("/"));
+		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("//"));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("tmp"));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("/tmp"));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("//tmp"));
@@ -26,6 +28,8 @@ public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 		localDir = localDir.substring(0, localDir.length() - 2);
 		Assert.assertEquals(localDir, getPathLocal(null));
 		Assert.assertEquals(localDir, getPathLocal(""));
+		Assert.assertEquals(localDir, getPathLocal("/"));
+		Assert.assertEquals(localDir, getPathLocal("//"));
 		Assert.assertEquals(localDir + "/tmp", getPathLocal("tmp"));
 		Assert.assertEquals(localDir + "/tmp", getPathLocal("/tmp"));
 		Assert.assertEquals(localDir + "/tmp", getPathLocal("//tmp"));
