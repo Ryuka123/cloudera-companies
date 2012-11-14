@@ -23,15 +23,17 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 		super(HadoopTestCase.LOCAL_MR, HadoopTestCase.LOCAL_FS, 2, 2);
 	}
 
-	public String getPathLocal(String relativeToModuleRootPath) {
-		return relativeToModuleRootPath == null || relativeToModuleRootPath.equals("") ? (LOCAL_DIR.length() < 2 ? "/"
-				: LOCAL_DIR.substring(0, LOCAL_DIR.length() - 2)) : new Path(LOCAL_DIR,
-				stripLeadingSlashes(relativeToModuleRootPath)).toUri().toString();
+	public String getPathLocal(String pathRelativeToModuleRoot) {
+		String pathRelativeToModuleRootLessLeadingSlashes = stripLeadingSlashes(pathRelativeToModuleRoot);
+		return pathRelativeToModuleRootLessLeadingSlashes.equals("") ? (LOCAL_DIR.length() < 2 ? "/" : LOCAL_DIR
+				.substring(0, LOCAL_DIR.length() - 2))
+				: new Path(LOCAL_DIR, pathRelativeToModuleRootLessLeadingSlashes).toUri().toString();
 	}
 
-	public String getPathHDFS(String relativeToHDFSRootPath) {
-		return relativeToHDFSRootPath == null || relativeToHDFSRootPath.equals("") ? HDFS_DIR : new Path(HDFS_PATH,
-				stripLeadingSlashes(relativeToHDFSRootPath)).toUri().toString();
+	public String getPathHDFS(String pathRelativeToHDFSRoot) {
+		String pathRelativeToHDFSRootLessLeadingSlashes = stripLeadingSlashes(pathRelativeToHDFSRoot);
+		return pathRelativeToHDFSRootLessLeadingSlashes.equals("") ? HDFS_DIR : new Path(HDFS_PATH,
+				pathRelativeToHDFSRootLessLeadingSlashes).toUri().toString();
 	}
 
 	@Override
@@ -56,9 +58,9 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	private String stripLeadingSlashes(String string) {
 		int indexAfterLeadingSlash = 0;
-		while (string.charAt(indexAfterLeadingSlash) == '/')
+		while (indexAfterLeadingSlash < string.length() && string.charAt(indexAfterLeadingSlash) == '/')
 			++indexAfterLeadingSlash;
-		return string.substring(indexAfterLeadingSlash, string.length());
+		return indexAfterLeadingSlash == 0 ? string : string.substring(indexAfterLeadingSlash, string.length());
 	}
 
 }

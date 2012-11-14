@@ -12,7 +12,6 @@ public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 	}
 
 	public void testPathHDFS() {
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS(null));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS(""));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("/"));
 		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("//"));
@@ -26,7 +25,6 @@ public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
 	public void testPathLocal() {
 		String localDir = new File(".").getAbsolutePath();
 		localDir = localDir.substring(0, localDir.length() - 2);
-		Assert.assertEquals(localDir, getPathLocal(null));
 		Assert.assertEquals(localDir, getPathLocal(""));
 		Assert.assertEquals(localDir, getPathLocal("/"));
 		Assert.assertEquals(localDir, getPathLocal("//"));
