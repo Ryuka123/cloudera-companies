@@ -47,6 +47,9 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 					+ UserGroupInformation.getCurrentUser().getUserName() + "'");
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
+		if (log.isInfoEnabled()) {
+			log.info("Local directory [" + args[0] + "] validated as [" + localDir.getAbsolutePath() + "]");
+		}
 
 		Path hdfsDir = new Path(args[1]);
 		FileSystem hdfs = FileSystem.get(getConf());
@@ -65,6 +68,24 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		} else {
 			hdfs.mkdirs(hdfsDir, new FsPermission(FsAction.EXECUTE, FsAction.READ, FsAction.READ));
 		}
+		if (log.isInfoEnabled()) {
+			log.info("HDFS directory [" + args[1] + "] validated as [" + hdfsDir + "]");
+		}
+
+		// TODO
+		// for (File localFile : localDir.listFiles()) {
+		// Matcher localFileRegEx =
+		// IMPORT_FILE_PATTERN.matcher(localFile.getName());
+		// if (localFileRegEx.matches()) {
+		// System.out.println("matches");
+		// } else {
+		// if (log.isWarnEnabled()) {
+		// log.warn("Input file [" + localFile.getName() +
+		// "] does not match regex [" + IMPORT_FILE_PATTERN
+		// + "]");
+		// }
+		// }
+		// }
 
 		return RETURN_SUCCESS;
 	}

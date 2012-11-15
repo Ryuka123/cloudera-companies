@@ -9,6 +9,12 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.mapred.HadoopTestCase;
 
+/**
+ * 
+ * Note that this class necessitates the use of JUnit3 parlance since
+ * {@link HadoopTestCase} is yet to updated for JUnit4.
+ * 
+ */
 public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	protected static String LOCAL_DIR = new File(".").getAbsolutePath();

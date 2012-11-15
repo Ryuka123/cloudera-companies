@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR_BASE=..
+DIR_BASE=../../../../../../src/data/resources/basiccompany
 if [ $# -gt 0 ]; then
   DIR_BASE=$1
 fi
@@ -23,7 +23,7 @@ function download() {
 				fi
 			done
 		done
-	done	
+	done
 }
 
 cd $DIR_BASE/warehouse/zip

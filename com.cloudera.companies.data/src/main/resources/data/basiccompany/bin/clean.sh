@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIR_BASE=..
+DIR_BASE=../../../../../../src/data/resources/basiccompany
 if [ $# -gt 0 ]; then
   DIR_BASE=$1
 fi

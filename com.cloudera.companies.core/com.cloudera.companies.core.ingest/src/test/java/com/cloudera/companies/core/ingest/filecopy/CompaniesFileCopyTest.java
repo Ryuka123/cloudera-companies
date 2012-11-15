@@ -131,4 +131,14 @@ public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 					new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE));
 		}
 	}
+
+	public void testFileCopy() throws Exception {
+
+		String inputDir = getPathLocal("/target/test-input");
+		String outputDir = getPathHDFS("/test-output");
+
+		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_SUCCESS,
+				companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+
+	}
 }

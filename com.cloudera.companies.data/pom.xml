@@ -25,8 +25,8 @@
 						<configuration>
 							<target>
 								<echo message="Downloading data files" />
-								<exec executable="src/data/basiccompany/bin/download.sh">
-									<arg value="src/data/basiccompany" />
+								<exec executable="src/main/resources/data/basiccompany/bin/download.sh">
+									<arg value="src/data/resources/basiccompany" />
 								</exec>
 							</target>
 						</configuration>
