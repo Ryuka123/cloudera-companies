@@ -2,7 +2,6 @@ package com.cloudera.companies.core.common;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,13 +9,13 @@ import org.junit.Test;
 public class CompaniesFileTest {
 
 	@Test
-	public void testParseFileName() throws IOException {
+	public void testParseFile() throws IOException {
 
 		boolean thrown = false;
 
 		thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseFileName(null));
+			Assert.assertNull(CompaniesFileMetaData.parseFile(null, null));
 		} catch (IllegalArgumentException e) {
 			thrown = true;
 		}
@@ -24,7 +23,7 @@ public class CompaniesFileTest {
 
 		thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseFileName(new File(".")));
+			Assert.assertNull(CompaniesFileMetaData.parseFile(new File(".").getName(), new File(".").getParent()));
 		} catch (IllegalArgumentException e) {
 			thrown = true;
 		}
@@ -32,44 +31,45 @@ public class CompaniesFileTest {
 
 		thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseFileName(new File("./target/BasicCompanyData-201-05-01-part1_4.zip")));
-		} catch (IllegalArgumentException e) {
+			Assert.assertNull(CompaniesFileMetaData.parseFile(new File(
+					"./target/BasicCompanyData-201-05-01-part1_4.zip").getName(), new File(
+					"./target/BasicCompanyData-201-05-01-part1_4.zip").getParent()));
+		} catch (IOException e) {
 			thrown = true;
 		}
 		Assert.assertTrue(thrown);
 
 		thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseFileName(new File("./target/BasicCompanyData-2012-O5-01-part1_4.zip")));
-		} catch (IllegalArgumentException e) {
+			Assert.assertNull(CompaniesFileMetaData.parseFile(new File(
+					"./target/BasicCompanyData-2012-O5-01-part1_4.zip").getName(), new File(
+					"./target/BasicCompanyData-2012-O5-01-part1_4.zip").getParent()));
+		} catch (IOException e) {
 			thrown = true;
 		}
 		Assert.assertTrue(thrown);
 
 		thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseFileName(new File("./target/BasicCompanyData-2012-05-1-part1_4.zip")));
-		} catch (IllegalArgumentException e) {
-			thrown = true;
-		}
-		Assert.assertTrue(thrown);
-
-		thrown = false;
-		try {
-			Assert.assertNull(CompaniesFile.parseFileName(new File("./target/BasicCompanyData-2012-05-01-part1_4.zip")));
-		} catch (IllegalArgumentException e) {
+			Assert.assertNull(CompaniesFileMetaData.parseFile(new File(
+					"./target/BasicCompanyData-2012-05-1-part1_4.zip").getName(), new File(
+					"./target/BasicCompanyData-2012-05-1-part1_4.zip").getParent()));
+		} catch (IOException e) {
 			thrown = true;
 		}
 		Assert.assertTrue(thrown);
 
 		int part = 1;
-		File testDataDir = new File("./target/test-input/data/basiccompany/sample/zip");
+		File testDataDir = new File("./target/test-data/data/basiccompany/sample/zip");
 		for (File testDataFile : testDataDir.listFiles()) {
-			CompaniesFile companiesFile = CompaniesFile.parseFileName(testDataFile);
+			CompaniesFileMetaData companiesFile = CompaniesFileMetaData.parseFile(testDataFile.getName(),
+					testDataFile.getParent());
 			Assert.assertNotNull(companiesFile);
-			Assert.assertEquals(testDataFile.getCanonicalPath(), companiesFile.getFile().getCanonicalPath());
-			Assert.assertEquals(new Date(1335826800000L), companiesFile.getSnapshotDate());
-			Assert.assertEquals(part++, companiesFile.getPart());
+			Assert.assertEquals(testDataFile.getName(), companiesFile.getName());
+			Assert.assertEquals(testDataFile.getParent(), companiesFile.getDirectory());
+			Assert.assertNotNull(companiesFile.getGroup());
+			Assert.assertNotNull(companiesFile.getSnapshotDate());
+			Assert.assertTrue(companiesFile.getPart() < 5 && companiesFile.getPart() > 0);
 			Assert.assertEquals(4, companiesFile.getPartTotal());
 		}
 
@@ -80,43 +80,44 @@ public class CompaniesFileTest {
 
 		boolean thrown = false;
 		try {
-			Assert.assertNull(CompaniesFile.parseRecord(null));
+			Assert.assertNull(CompaniesFileMetaData.parseRecord(null));
 		} catch (IllegalArgumentException e) {
 			thrown = true;
 		}
 		Assert.assertTrue(thrown);
 
-		Assert.assertArrayEquals(new String[] { "" }, CompaniesFile.parseRecord(""));
-		Assert.assertArrayEquals(new String[] { "" }, CompaniesFile.parseRecord("A"));
-		Assert.assertArrayEquals(new String[] { "" }, CompaniesFile.parseRecord("AA"));
-		Assert.assertArrayEquals(new String[] { "" }, CompaniesFile.parseRecord("AA BB"));
-		Assert.assertArrayEquals(new String[] { "" }, CompaniesFile.parseRecord(" AA BB "));
+		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord(""));
+		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("A"));
+		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("AA"));
+		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("AA BB"));
+		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord(" AA BB "));
 
-		Assert.assertArrayEquals(new String[] { "A" }, CompaniesFile.parseRecord("\"A\""));
-		Assert.assertArrayEquals(new String[] { "AA" }, CompaniesFile.parseRecord("\"AA\""));
-		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFile.parseRecord("\"AA BB\""));
-		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFile.parseRecord(" \"AA BB\" "));
-		Assert.assertArrayEquals(new String[] { " AA BB " }, CompaniesFile.parseRecord("\" AA BB \""));
-		Assert.assertArrayEquals(new String[] { "AA\" BB" }, CompaniesFile.parseRecord("\"AA\"\" BB\""));
-		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFile.parseRecord("\"\"\"AA BB\"\"\""));
-		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFile.parseRecord(" \"\"\"AA BB\"\"\" "));
-		Assert.assertArrayEquals(new String[] { "\"AA,BB\"" }, CompaniesFile.parseRecord(" \"\"\"AA,BB\"\"\" "));
+		Assert.assertArrayEquals(new String[] { "A" }, CompaniesFileMetaData.parseRecord("\"A\""));
+		Assert.assertArrayEquals(new String[] { "AA" }, CompaniesFileMetaData.parseRecord("\"AA\""));
+		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFileMetaData.parseRecord("\"AA BB\""));
+		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFileMetaData.parseRecord(" \"AA BB\" "));
+		Assert.assertArrayEquals(new String[] { " AA BB " }, CompaniesFileMetaData.parseRecord("\" AA BB \""));
+		Assert.assertArrayEquals(new String[] { "AA\" BB" }, CompaniesFileMetaData.parseRecord("\"AA\"\" BB\""));
+		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFileMetaData.parseRecord("\"\"\"AA BB\"\"\""));
+		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFileMetaData.parseRecord(" \"\"\"AA BB\"\"\" "));
+		Assert.assertArrayEquals(new String[] { "\"AA,BB\"" }, CompaniesFileMetaData.parseRecord(" \"\"\"AA,BB\"\"\" "));
 
-		Assert.assertArrayEquals(new String[] { "A", "A" }, CompaniesFile.parseRecord("\"A\",\"A\""));
-		Assert.assertArrayEquals(new String[] { "AA", "AA" }, CompaniesFile.parseRecord("\"AA\",\"AA\""));
-		Assert.assertArrayEquals(new String[] { "AA BB", "AA BB" }, CompaniesFile.parseRecord("\"AA BB\",\"AA BB\""));
+		Assert.assertArrayEquals(new String[] { "A", "A" }, CompaniesFileMetaData.parseRecord("\"A\",\"A\""));
+		Assert.assertArrayEquals(new String[] { "AA", "AA" }, CompaniesFileMetaData.parseRecord("\"AA\",\"AA\""));
 		Assert.assertArrayEquals(new String[] { "AA BB", "AA BB" },
-				CompaniesFile.parseRecord(" \"AA BB\" , \"AA BB\" "));
+				CompaniesFileMetaData.parseRecord("\"AA BB\",\"AA BB\""));
+		Assert.assertArrayEquals(new String[] { "AA BB", "AA BB" },
+				CompaniesFileMetaData.parseRecord(" \"AA BB\" , \"AA BB\" "));
 		Assert.assertArrayEquals(new String[] { " AA BB ", " AA BB " },
-				CompaniesFile.parseRecord("\" AA BB \",\" AA BB \""));
+				CompaniesFileMetaData.parseRecord("\" AA BB \",\" AA BB \""));
 		Assert.assertArrayEquals(new String[] { "AA\" BB", "AA\" BB" },
-				CompaniesFile.parseRecord("\"AA\"\" BB\",\"AA\"\" BB\""));
+				CompaniesFileMetaData.parseRecord("\"AA\"\" BB\",\"AA\"\" BB\""));
 		Assert.assertArrayEquals(new String[] { "\"AA BB\"", "\"AA BB\"" },
-				CompaniesFile.parseRecord("\"\"\"AA BB\"\"\",\"\"\"AA BB\"\"\""));
+				CompaniesFileMetaData.parseRecord("\"\"\"AA BB\"\"\",\"\"\"AA BB\"\"\""));
 		Assert.assertArrayEquals(new String[] { "\"AA BB\"", "\"AA BB\"" },
-				CompaniesFile.parseRecord(" \"\"\"AA BB\"\"\" , \"\"\"AA BB\"\"\" "));
+				CompaniesFileMetaData.parseRecord(" \"\"\"AA BB\"\"\" , \"\"\"AA BB\"\"\" "));
 		Assert.assertArrayEquals(new String[] { "\"AA,BB\"", "\"AA,BB\"" },
-				CompaniesFile.parseRecord(" \"\"\"AA,BB\"\"\" , \"\"\"AA,BB\"\"\" "));
+				CompaniesFileMetaData.parseRecord(" \"\"\"AA,BB\"\"\" , \"\"\"AA,BB\"\"\" "));
 
 	}
 }

@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -28,9 +29,9 @@ public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 
 	public void testLaunchInvalid() throws Exception {
 
-		String inputDir = getPathLocal("/target/test-input");
-		String inputFile = getPathLocal("/target/test-input/input.txt");
-		String inputNonExistantDir = getPathLocal("/target/test-input-does-not-exist");
+		String inputDir = getPathLocal("/target/test-data");
+		String inputFile = getPathLocal("/target/test-data/input.txt");
+		String inputNonExistantDir = getPathLocal("/target/test-data-does-not-exist");
 
 		String outputDir = getPathHDFS("/test-output");
 		String outputFile = getPathHDFS("/test-output/output.txt");
@@ -132,13 +133,44 @@ public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 		}
 	}
 
-	public void testFileCopy() throws Exception {
+	public void testFileCopySingleThread() throws Exception {
 
-		String inputDir = getPathLocal("/target/test-input");
+		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
 		String outputDir = getPathHDFS("/test-output");
 
 		Assert.assertEquals(CompaniesFileCopyDriver.RETURN_SUCCESS,
 				companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+		Assert.assertEquals(1, getFileSystem().listStatus(new Path(outputDir)).length);
+		for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
+			Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
+			for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
+				Assert.assertEquals(4, getFileSystem().listStatus(monthFileStatus.getPath()).length);
+			}
+		}
 
 	}
+
+	public void testFileCopyMultiThread() throws Exception {
+
+		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
+		String outputDir = getPathHDFS("/test-output");
+
+		getFileSystem().getConf().set(CompaniesFileCopyDriver.CONF_THREAD_NUMBER, "10");
+
+		try {
+			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_SUCCESS,
+					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+			Assert.assertEquals(1, getFileSystem().listStatus(new Path(outputDir)).length);
+			for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
+				Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
+				for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
+					Assert.assertEquals(4, getFileSystem().listStatus(monthFileStatus.getPath()).length);
+				}
+			}
+		} finally {
+			getFileSystem().getConf().set(CompaniesFileCopyDriver.CONF_THREAD_NUMBER, "1");
+		}
+
+	}
+
 }
