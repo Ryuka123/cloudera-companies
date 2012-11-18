@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.security.UserGroupInformation;
 
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
@@ -58,73 +59,77 @@ public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
 			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
 					companiesFileCopyDriver.run(new String[] { inputDir, outputFile }));
 
-			getFileSystem().setPermission(new Path(inputDir),
-					new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE));
+			if (!UserGroupInformation.getCurrentUser().getUserName().equals("root")) {
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(inputDir),
+						new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(inputDir),
-					new FsPermission(FsAction.READ, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(inputDir),
+						new FsPermission(FsAction.READ, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(inputDir),
-					new FsPermission(FsAction.WRITE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(inputDir),
+						new FsPermission(FsAction.WRITE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(inputDir),
-					new FsPermission(FsAction.READ_WRITE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(inputDir),
+						new FsPermission(FsAction.READ_WRITE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(inputDir),
-					new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE));
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(inputDir),
+						new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.NONE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.READ, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.READ, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.WRITE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.WRITE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.READ_WRITE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.READ_WRITE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.EXECUTE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.EXECUTE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.READ_EXECUTE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.READ_EXECUTE, FsAction.NONE, FsAction.NONE));
 
-			getFileSystem().setPermission(new Path(outputDir),
-					new FsPermission(FsAction.WRITE_EXECUTE, FsAction.NONE, FsAction.NONE));
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
 
-			Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+				getFileSystem().setPermission(new Path(outputDir),
+						new FsPermission(FsAction.WRITE_EXECUTE, FsAction.NONE, FsAction.NONE));
+
+				Assert.assertEquals(CompaniesFileCopyDriver.RETURN_FAILURE_INVALID_ARGS,
+						companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
+
+			}
 		} finally {
 			getFileSystem().setPermission(new Path(inputDir),
 					new FsPermission(FsAction.ALL, FsAction.NONE, FsAction.NONE));

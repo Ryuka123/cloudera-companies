@@ -21,15 +21,16 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
+			<groupId>net.sf.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>${opencsv.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudera.companies.repo.bom.cdh.client</groupId>
 			<artifactId>com.cloudera.companies.repo.bom.cdh.client.core</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.opencsv</groupId>
-			<artifactId>opencsv</artifactId>
-			<version>${opencsv.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.cloudera.companies</groupId>

@@ -30,6 +30,7 @@
 			<artifactId>com.cloudera.companies.repo.bom.cdh.client.core</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.cloudera.companies.core</groupId>
