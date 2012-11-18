@@ -99,7 +99,6 @@
 							<descriptors>
 								<descriptor>src/main/assembly/hadoop-jar.xml</descriptor>
 							</descriptors>
-							<skipAssembly>${maven.assembly.skip}</skipAssembly>
 						</configuration>
 					</execution>
 				</executions>
