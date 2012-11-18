@@ -27,6 +27,8 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	public CompaniesCDHTestCase() throws IOException {
 		super(HadoopTestCase.LOCAL_MR, HadoopTestCase.LOCAL_FS, 2, 2);
+
+		// Necessary to avoid warnings printed to console on OS-X
 		System.setProperty("java.security.krb5.realm", "CDHCLUSTER.com");
 		System.setProperty("java.security.krb5.kdc", "kdc.cdhcluster.com");
 	}
