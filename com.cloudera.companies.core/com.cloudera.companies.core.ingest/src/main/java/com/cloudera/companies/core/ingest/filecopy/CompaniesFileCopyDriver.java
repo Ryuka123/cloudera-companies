@@ -74,20 +74,19 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		File localDir = new File(localDirPath);
 		if (!localDir.exists()) {
 			if (log.isErrorEnabled()) {
-				log.error("Error: Local directory '" + localDirPath + "' does not exist");
+				log.error("Local directory '" + localDirPath + "' does not exist");
 			}
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!localDir.isDirectory()) {
 			if (log.isErrorEnabled()) {
-				log.error("Error: Local directory '" + localDirPath + "' is of incorrect type");
+				log.error("Local directory '" + localDirPath + "' is of incorrect type");
 			}
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!localDir.canExecute()) {
 			if (log.isErrorEnabled()) {
-				log.error("Error: Local directory '" + localDirPath
-						+ "' has too restrictive permissions to read as user '"
+				log.error("Local directory '" + localDirPath + "' has too restrictive permissions to read as user '"
 						+ UserGroupInformation.getCurrentUser().getUserName() + "'");
 			}
 			return RETURN_FAILURE_INVALID_ARGS;
@@ -102,14 +101,14 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		if (hdfs.exists(hdfsDir)) {
 			if (!hdfs.isDirectory(hdfsDir)) {
 				if (log.isErrorEnabled()) {
-					log.error("Error: HDFS directory '" + hdfsDirPath + "' is of incorrect type");
+					log.error("HDFS directory '" + hdfsDirPath + "' is of incorrect type");
 				}
 				return RETURN_FAILURE_INVALID_ARGS;
 			}
 			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
 					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.ALL)) {
 				if (log.isErrorEnabled()) {
-					log.error("Error: HDFS directory '" + hdfsDirPath
+					log.error("HDFS directory '" + hdfsDirPath
 							+ "' has too restrictive permissions to read/write as user '"
 							+ UserGroupInformation.getCurrentUser().getUserName() + "'");
 				}
@@ -324,7 +323,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			public void run() {
 				if (!isComplete.get()) {
 					if (log.isErrorEnabled()) {
-						log.error("Warning: Halting ingest before completion, part files may be left over");
+						log.error("Halting ingest before completion, part files may be left over");
 					}
 				}
 			}
