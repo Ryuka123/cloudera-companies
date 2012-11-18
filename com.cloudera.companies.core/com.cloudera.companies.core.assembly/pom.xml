@@ -18,6 +18,7 @@
 			<groupId>com.cloudera.companies.core</groupId>
 			<artifactId>com.cloudera.companies.core.ingest</artifactId>
 			<version>${project.version}</version>
+			<classifier>hadoop-job</classifier>
 		</dependency>
 	</dependencies>
 
