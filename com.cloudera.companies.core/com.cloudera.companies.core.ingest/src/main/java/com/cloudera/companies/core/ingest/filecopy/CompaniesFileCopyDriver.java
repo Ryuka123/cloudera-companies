@@ -1,7 +1,9 @@
 package com.cloudera.companies.core.ingest.filecopy;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,12 +17,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.RunJar;
+import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +46,8 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
 	public static final int RETURN_FAILURE_RUNTIME = 3;
 
+	private static AtomicBoolean isComplete = new AtomicBoolean(false);
+
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
 
 	@Override
@@ -48,27 +55,41 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 
 		long time = System.currentTimeMillis();
 
+		isComplete.set(false);
+
 		if (args == null || args.length != 2) {
-			System.err.println("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
-					+ " [generic options] <local-dir> <hdfs-dir>");
-			ToolRunner.printGenericCommandUsage(System.err);
+			if (log.isErrorEnabled()) {
+				log.error("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
+						+ " [generic options] <local-dir> <hdfs-dir>");
+				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
+				PrintStream printStream = new PrintStream(byteArrayPrintStream);
+				ToolRunner.printGenericCommandUsage(printStream);
+				log.error(byteArrayPrintStream.toString());
+				printStream.close();
+			}
 			return RETURN_FAILURE_MISSING_ARGS;
 		}
 
 		String localDirPath = args[0];
 		File localDir = new File(localDirPath);
 		if (!localDir.exists()) {
-			System.err.println("Error: Local directory '" + localDirPath + "' does not exist");
+			if (log.isErrorEnabled()) {
+				log.error("Error: Local directory '" + localDirPath + "' does not exist");
+			}
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!localDir.isDirectory()) {
-			System.err.println("Error: Local directory '" + localDirPath + "' is of incorrect type");
+			if (log.isErrorEnabled()) {
+				log.error("Error: Local directory '" + localDirPath + "' is of incorrect type");
+			}
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!localDir.canExecute()) {
-			System.err.println("Error: Local directory '" + localDirPath
-					+ "' has too restrictive permissions to read as user '"
-					+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+			if (log.isErrorEnabled()) {
+				log.error("Error: Local directory '" + localDirPath
+						+ "' has too restrictive permissions to read as user '"
+						+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+			}
 			return RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
@@ -80,14 +101,18 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		final FileSystem hdfs = getFileSystem();
 		if (hdfs.exists(hdfsDir)) {
 			if (!hdfs.isDirectory(hdfsDir)) {
-				System.err.println("Error: HDFS directory '" + hdfsDirPath + "' is of incorrect type");
+				if (log.isErrorEnabled()) {
+					log.error("Error: HDFS directory '" + hdfsDirPath + "' is of incorrect type");
+				}
 				return RETURN_FAILURE_INVALID_ARGS;
 			}
 			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
 					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.ALL)) {
-				System.err.println("Error: HDFS directory '" + hdfsDirPath
-						+ "' has too restrictive permissions to read/write as user '"
-						+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+				if (log.isErrorEnabled()) {
+					log.error("Error: HDFS directory '" + hdfsDirPath
+							+ "' has too restrictive permissions to read/write as user '"
+							+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+				}
 				return RETURN_FAILURE_INVALID_ARGS;
 			}
 		} else {
@@ -183,6 +208,10 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			}
 		}
 
+		closeFileSystems();
+
+		isComplete.set(true);
+
 		if (log.isInfoEnabled()) {
 			log.info("File ingest complete, successfully processing [" + fileCopySucces.size() + "] files, skipping ["
 					+ fileCopySkips.size() + "] files and failing on [" + fileCopyFailure.size() + "] files with ["
@@ -207,8 +236,10 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		return fileSystem;
 	}
 
-	public static void main(String[] args) throws Exception {
-		System.exit(ToolRunner.run(new CompaniesFileCopyDriver(), args));
+	private void closeFileSystems() throws IOException {
+		for (FileSystem fileSystem : fileSystems.values()) {
+			fileSystem.close();
+		}
 	}
 
 	public enum FileCopyMode {
@@ -285,5 +316,19 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			}
 			return false;
 		}
+	}
+
+	public static void main(String[] args) throws Exception {
+		ShutdownHookManager.get().addShutdownHook(new Runnable() {
+			@Override
+			public void run() {
+				if (!isComplete.get()) {
+					if (log.isErrorEnabled()) {
+						log.error("Warning: Halting ingest before completion, part files may be left over");
+					}
+				}
+			}
+		}, RunJar.SHUTDOWN_HOOK_PRIORITY + 1);
+		System.exit(ToolRunner.run(new CompaniesFileCopyDriver(), args));
 	}
 }
