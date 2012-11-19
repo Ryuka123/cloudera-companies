@@ -10,6 +10,8 @@ import au.com.bytecode.opencsv.CSVParser;
 
 public class CompaniesFileMetaData {
 
+	public static final int FILE_FIELDS_NUMBER = 54;
+	
 	private static final Pattern FILE_NAME_PATTERN = Pattern
 			.compile("BasicCompanyData-(20[0-9][0-9]-[0-1][0-9]-[0-3][0-9])-part([1-9])_([1-9]).zip");
 

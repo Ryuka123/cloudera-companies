@@ -15,6 +15,7 @@ public class CompaniesETLReducer extends Reducer<Text, Text, Text, Text> {
 			if (!recordProcessed) {
 				context.write(key, value);
 			} else {
+				context.getCounter(RecordCounter.VALID).increment(-1);
 				context.getCounter(RecordCounter.MALFORMED_DUPLICATE).increment(1);
 			}
 		}

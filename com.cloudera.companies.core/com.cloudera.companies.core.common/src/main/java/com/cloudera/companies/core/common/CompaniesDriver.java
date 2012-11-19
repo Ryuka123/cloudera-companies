@@ -11,6 +11,10 @@ import org.slf4j.LoggerFactory;
 public abstract class CompaniesDriver extends Configured implements Tool {
 
 	private static Logger log = LoggerFactory.getLogger(CompaniesDriver.class);
+	public static final int RETURN_SUCCESS = 0;
+	public static final int RETURN_FAILURE_MISSING_ARGS = 1;
+	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
+	public static final int RETURN_FAILURE_RUNTIME = 3;
 
 	@Override
 	public void setConf(Configuration conf) {

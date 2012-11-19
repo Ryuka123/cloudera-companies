@@ -41,11 +41,6 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 	public static final String CONF_TIMEOUT_SECS = "companies.ingest.timeout.secs";
 	public static final String CONF_THREAD_NUMBER = "companies.ingest.thread.number";
 
-	public static final int RETURN_SUCCESS = 0;
-	public static final int RETURN_FAILURE_MISSING_ARGS = 1;
-	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
-	public static final int RETURN_FAILURE_RUNTIME = 3;
-
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
@@ -60,73 +55,75 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
-						+ " [generic options] <local-dir> <hdfs-dir>");
+						+ " [generic options] <local-input-dir> <hdfs-output-dir>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
 				ToolRunner.printGenericCommandUsage(printStream);
 				log.error(byteArrayPrintStream.toString());
 				printStream.close();
 			}
-			return RETURN_FAILURE_MISSING_ARGS;
+			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		String localDirPath = args[0];
-		File localDir = new File(localDirPath);
-		if (!localDir.exists()) {
+		String localInputDirPath = args[0];
+		File localInputDir = new File(localInputDirPath);
+		if (!localInputDir.exists()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local directory '" + localDirPath + "' does not exist");
+				log.error("Local input directory [" + localInputDirPath + "] does not exist");
 			}
-			return RETURN_FAILURE_INVALID_ARGS;
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (!localDir.isDirectory()) {
+		if (!localInputDir.isDirectory()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local directory '" + localDirPath + "' is of incorrect type");
+				log.error("Local input directory [" + localInputDirPath + "] is of incorrect type");
 			}
-			return RETURN_FAILURE_INVALID_ARGS;
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (!localDir.canExecute()) {
+		if (!localInputDir.canExecute()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local directory '" + localDirPath + "' has too restrictive permissions to read as user '"
-						+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+				log.error("Local input directory [" + localInputDirPath
+						+ "] has too restrictive permissions to read as user ["
+						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
-			return RETURN_FAILURE_INVALID_ARGS;
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
-			log.info("Local directory [" + localDirPath + "] validated as [" + localDir.getAbsolutePath() + "]");
+			log.info("Local input directory [" + localInputDirPath + "] validated as ["
+					+ localInputDir.getAbsolutePath() + "]");
 		}
 
-		String hdfsDirPath = args[1];
-		Path hdfsDir = new Path(hdfsDirPath);
+		String hdfsOutputDirPath = args[1];
+		Path hdfsOutputDir = new Path(hdfsOutputDirPath);
 		final FileSystem hdfs = getFileSystem();
-		if (hdfs.exists(hdfsDir)) {
-			if (!hdfs.isDirectory(hdfsDir)) {
+		if (hdfs.exists(hdfsOutputDir)) {
+			if (!hdfs.isDirectory(hdfsOutputDir)) {
 				if (log.isErrorEnabled()) {
-					log.error("HDFS directory '" + hdfsDirPath + "' is of incorrect type");
+					log.error("HDFS output directory [" + hdfsOutputDirPath + "] is of incorrect type");
 				}
-				return RETURN_FAILURE_INVALID_ARGS;
+				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 			}
 			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
-					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsDir, FsAction.ALL)) {
+					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir, FsAction.ALL)) {
 				if (log.isErrorEnabled()) {
-					log.error("HDFS directory '" + hdfsDirPath
-							+ "' has too restrictive permissions to read/write as user '"
-							+ UserGroupInformation.getCurrentUser().getUserName() + "'");
+					log.error("HDFS output directory [" + hdfsOutputDirPath
+							+ "] has too restrictive permissions to read/write as user ["
+							+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 				}
-				return RETURN_FAILURE_INVALID_ARGS;
+				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 			}
 		} else {
-			hdfs.mkdirs(hdfsDir, new FsPermission(FsAction.ALL, FsAction.READ_EXECUTE, FsAction.READ_EXECUTE));
+			hdfs.mkdirs(hdfsOutputDir, new FsPermission(FsAction.ALL, FsAction.READ_EXECUTE, FsAction.READ_EXECUTE));
 		}
 		if (log.isInfoEnabled()) {
-			log.info("HDFS directory [" + hdfsDirPath + "] validated as [" + hdfsDir + "]");
+			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
 
 		Map<String, List<CompaniesFileMetaData>> companiesFileMetaDatasByGroup = new HashMap<String, List<CompaniesFileMetaData>>();
-		for (File localFile : localDir.listFiles()) {
-			if (localFile.isFile() && localFile.canRead()) {
+		for (File localInputFile : localInputDir.listFiles()) {
+			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
-					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parseFile(localFile.getName(),
-							localFile.getParent());
+					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parseFile(
+							localInputFile.getName(), localInputFile.getParent());
 					List<CompaniesFileMetaData> companiesFileMetaDatas;
 					if ((companiesFileMetaDatas = companiesFileMetaDatasByGroup.get(companiesFileMetaData.getGroup())) == null) {
 						companiesFileMetaDatasByGroup.put(companiesFileMetaData.getGroup(),
@@ -135,7 +132,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 					companiesFileMetaDatas.add(companiesFileMetaData);
 				} catch (IOException e) {
 					if (log.isWarnEnabled()) {
-						log.warn("Failed to parse file [" + localFile.getCanonicalPath() + "]", e);
+						log.warn("Failed to parse file [" + localInputFile.getCanonicalPath() + "]", e);
 					}
 				}
 			}
@@ -147,7 +144,8 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		for (String companiesFileGroup : companiesFileMetaDatasByGroup.keySet()) {
 			for (CompaniesFileMetaData companiesFileMetaData : companiesFileMetaDatasByGroup.get(companiesFileGroup)) {
 				FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
-						companiesFileMetaData.getDirectory()), new Path(hdfsDir, companiesFileMetaData.getGroup()));
+						companiesFileMetaData.getDirectory()),
+						new Path(hdfsOutputDir, companiesFileMetaData.getGroup()));
 				switch (fileCopy.call().status) {
 				case SUCCESS:
 					fileCopySucces.add(fileCopy);
@@ -180,8 +178,8 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			FileCopy fileCopy = fileCopyFuture.get();
 			if (fileCopyFuture.isCancelled()) {
 				if (log.isErrorEnabled()) {
-					log.error("File copy mode [" + fileCopy.mode + "] timed out during ingest of local file ["
-							+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS file ["
+					log.error("File copy mode [" + fileCopy.mode + "] timed out during ingest of local input file ["
+							+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS output file ["
 							+ new Path(fileCopy.toDirectory, fileCopy.fromFile) + "]");
 				}
 				fileCopy.status = FileCopyStatus.FAILURE;
@@ -190,15 +188,15 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			}
 			if (fileCopyFuture.isCancelled() || !fileCopy.status.equals(FileCopyStatus.SUCCESS)) {
 				if (log.isErrorEnabled()) {
-					log.error("Failures detected, rolling back ingest of local file ["
-							+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS file ["
+					log.error("Failures detected, rolling back ingest of local input file ["
+							+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS output file ["
 							+ new Path(fileCopy.toDirectory, fileCopy.fromFile) + "]");
 				}
 				fileCopy.mode = FileCopyMode.CLEANUP;
 				if (!fileCopy.call().status.equals(FileCopyStatus.SUCCESS)) {
 					if (log.isErrorEnabled()) {
-						log.error("Rollback failed for local file ["
-								+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS file ["
+						log.error("Rollback failed for local input file ["
+								+ new Path(fileCopy.fromDirectory, fileCopy.fromFile) + "] to HDFS output file ["
 								+ new Path(fileCopy.toDirectory, fileCopy.fromFile) + "]");
 					}
 				}
@@ -217,7 +215,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 					+ numberThreads + "] threads in [" + (System.currentTimeMillis() - time) + "] ms");
 		}
 
-		return fileCopyFailure.size() == 0 ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+		return fileCopyFailure.size() == 0 ? CompaniesDriver.RETURN_SUCCESS : CompaniesDriver.RETURN_FAILURE_RUNTIME;
 	}
 
 	/**
@@ -293,9 +291,9 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 				}
 			}
 			if (log.isInfoEnabled()) {
-				log.info("File copy mode [" + mode + "] returned [" + status + "] during ingest of local file ["
-						+ new Path(fromDirectory, fromFile) + "] to HDFS file [" + new Path(toDirectory, fromFile)
-						+ "]");
+				log.info("File copy mode [" + mode + "] returned [" + status + "] during ingest of local input file ["
+						+ new Path(fromDirectory, fromFile) + "] to HDFS output file ["
+						+ new Path(toDirectory, fromFile) + "]");
 			}
 			return this;
 		}
@@ -323,7 +321,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			public void run() {
 				if (!isComplete.get()) {
 					if (log.isErrorEnabled()) {
-						log.error("Halting ingest before completion, part files may be left over");
+						log.error("Halting before completion, files may only be partly copied to HDFS");
 					}
 				}
 			}
