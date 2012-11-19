@@ -14,11 +14,11 @@ import org.apache.hadoop.security.UserGroupInformation;
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
-public class CompaniesFileCopyTest extends CompaniesCDHTestCase {
+public class CompaniesFileCopyDriverTest extends CompaniesCDHTestCase {
 
 	private CompaniesFileCopyDriver companiesFileCopyDriver;
 
-	public CompaniesFileCopyTest() throws IOException {
+	public CompaniesFileCopyDriverTest() throws IOException {
 		super();
 	}
 

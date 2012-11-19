@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
@@ -13,13 +14,13 @@ import org.junit.Assert;
 import com.cloudera.companies.core.ingest.etl.CompaniesETLDriver.RecordCounter;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
-public class CompaniesETLTest extends CompaniesCDHTestCase {
+public class CompaniesETLMapReduceTest extends CompaniesCDHTestCase {
 
-	private MapDriver<Text, Text, Text, Text> mapDriver;
+	private MapDriver<LongWritable, Text, Text, Text> mapDriver;
 	private ReduceDriver<Text, Text, Text, Text> reduceDriver;
-	private MapReduceDriver<Text, Text, Text, Text, Text, Text> mapReduceDriver;
+	private MapReduceDriver<LongWritable, Text, Text, Text, Text, Text> mapReduceDriver;
 
-	public CompaniesETLTest() throws IOException {
+	public CompaniesETLMapReduceTest() throws IOException {
 	}
 
 	@Override
@@ -33,7 +34,7 @@ public class CompaniesETLTest extends CompaniesCDHTestCase {
 
 	public void testMapperValid() {
 		String record = "\"Company X\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
-		mapDriver.withInput(new Text(), new Text(record));
+		mapDriver.withInput(new LongWritable(0), new Text(record));
 		mapDriver.withOutput(new Text("Company X"), new Text(record));
 		mapDriver.runTest();
 		Assert.assertEquals(1, mapDriver.getCounters().findCounter(RecordCounter.VALID).getValue());
@@ -51,7 +52,7 @@ public class CompaniesETLTest extends CompaniesCDHTestCase {
 		String record = "\"Company X\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
 		List<Text> values = new ArrayList<Text>();
 		values.add(new Text("\"Company X\""));
-		mapReduceDriver.withInput(new Text(""), new Text(record));
+		mapReduceDriver.withInput(new LongWritable(0), new Text(record));
 		mapReduceDriver.withOutput(new Text("Company X"), new Text(record));
 		mapReduceDriver.runTest();
 	}

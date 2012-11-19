@@ -8,10 +8,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.RunJar;
@@ -86,23 +87,19 @@ public class CompaniesETLDriver extends CompaniesDriver {
 		String hdfsOutputDirPath = args[1];
 		Path hdfsOutputDir = new Path(hdfsOutputDirPath);
 		if (hdfs.exists(hdfsOutputDir)) {
-			if (!hdfs.isDirectory(hdfsOutputDir)) {
-				if (log.isErrorEnabled()) {
-					log.error("HDFS output directory [" + hdfsOutputDirPath + "] is of incorrect type");
-				}
-				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+			if (log.isErrorEnabled()) {
+				log.error("HDFS output directory [" + hdfsOutputDirPath + "] already exists");
 			}
-			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
-					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir, FsAction.ALL)) {
-				if (log.isErrorEnabled()) {
-					log.error("HDFS output directory [" + hdfsOutputDirPath
-							+ "] has too restrictive permissions to read/write as user ["
-							+ UserGroupInformation.getCurrentUser().getUserName() + "]");
-				}
-				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+		}
+		if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
+				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir.getParent(), FsAction.ALL)) {
+			if (log.isErrorEnabled()) {
+				log.error("HDFS parent of output directory [" + hdfsOutputDirPath
+						+ "] has too restrictive permissions to write as user ["
+						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
-		} else {
-			hdfs.mkdirs(hdfsOutputDir, new FsPermission(FsAction.ALL, FsAction.READ_EXECUTE, FsAction.READ_EXECUTE));
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
@@ -129,8 +126,8 @@ public class CompaniesETLDriver extends CompaniesDriver {
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 
-		TextInputFormat.setInputPaths(job, hdfsInputtDir);
-		TextOutputFormat.setOutputPath(job, hdfsOutputDir);
+		FileInputFormat.setInputPaths(job, hdfsInputtDir);
+		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
 
 		job.setJarByClass(CompaniesETLDriver.class);
 
