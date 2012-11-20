@@ -45,8 +45,7 @@ public class CompaniesFileCopyDriverTest extends CompaniesCDHTestCase {
 
 		try {
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, companiesFileCopyDriver.run(null));
-			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
-					companiesFileCopyDriver.run(new String[0]));
+			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, companiesFileCopyDriver.run(new String[0]));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
 					companiesFileCopyDriver.run(new String[] {}));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
@@ -150,33 +149,21 @@ public class CompaniesFileCopyDriverTest extends CompaniesCDHTestCase {
 		for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
 			Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
 			for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
-				Assert.assertEquals(4, getFileSystem().listStatus(monthFileStatus.getPath()).length);
+				Assert.assertEquals(5, getFileSystem().listStatus(monthFileStatus.getPath()).length);
+				Assert.assertTrue(getFileSystem().exists(
+						new Path(monthFileStatus.getPath(),
+								CompaniesFileCopyDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)));
 			}
 		}
-
 	}
 
 	public void testFileCopyMultiThread() throws Exception {
-
-		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
-		String outputDir = getPathHDFS("/test-output");
-
 		getFileSystem().getConf().set(CompaniesFileCopyDriver.CONF_THREAD_NUMBER, "10");
-
 		try {
-			Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
-					companiesFileCopyDriver.run(new String[] { inputDir, outputDir }));
-			Assert.assertEquals(1, getFileSystem().listStatus(new Path(outputDir)).length);
-			for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
-				Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
-				for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
-					Assert.assertEquals(4, getFileSystem().listStatus(monthFileStatus.getPath()).length);
-				}
-			}
+			testFileCopySingleThread();
 		} finally {
 			getFileSystem().getConf().set(CompaniesFileCopyDriver.CONF_THREAD_NUMBER, "1");
 		}
-
 	}
 
 }

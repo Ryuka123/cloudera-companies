@@ -41,6 +41,9 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 	public static final String CONF_TIMEOUT_SECS = "companies.ingest.timeout.secs";
 	public static final String CONF_THREAD_NUMBER = "companies.ingest.thread.number";
 
+	public static final String CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL = "mapreduce.fileoutputcommitter.marksuccessfuljobs";
+	public static final String CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME = "_SUCCESS";
+
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
@@ -92,6 +95,14 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 					+ localInputDir.getAbsolutePath() + "]");
 		}
 
+		if (!getFileSystem().getConf().getBoolean(CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL, true)) {
+			if (log.isErrorEnabled()) {
+				log.error("Configuraiton property [" + CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL
+						+ "] should be set to [true] in order for ingest to ingest files correctly");
+			}
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+		}
+
 		String hdfsOutputDirPath = args[1];
 		Path hdfsOutputDir = new Path(hdfsOutputDirPath);
 		final FileSystem hdfs = getFileSystem();
@@ -118,18 +129,20 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
 
-		Map<String, List<CompaniesFileMetaData>> companiesFileMetaDatasByGroup = new HashMap<String, List<CompaniesFileMetaData>>();
+		Map<String, List<FileCopy>> fileCopyByGroup = new HashMap<String, List<FileCopy>>();
 		for (File localInputFile : localInputDir.listFiles()) {
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
 					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parseFile(
 							localInputFile.getName(), localInputFile.getParent());
-					List<CompaniesFileMetaData> companiesFileMetaDatas;
-					if ((companiesFileMetaDatas = companiesFileMetaDatasByGroup.get(companiesFileMetaData.getGroup())) == null) {
-						companiesFileMetaDatasByGroup.put(companiesFileMetaData.getGroup(),
-								(companiesFileMetaDatas = new ArrayList<CompaniesFileMetaData>()));
+					FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
+							companiesFileMetaData.getDirectory()), new Path(hdfsOutputDir,
+							companiesFileMetaData.getGroup()), companiesFileMetaData.getGroup());
+					List<FileCopy> fileCopys;
+					if ((fileCopys = fileCopyByGroup.get(companiesFileMetaData.getGroup())) == null) {
+						fileCopyByGroup.put(companiesFileMetaData.getGroup(), (fileCopys = new ArrayList<FileCopy>()));
 					}
-					companiesFileMetaDatas.add(companiesFileMetaData);
+					fileCopys.add(fileCopy);
 				} catch (IOException e) {
 					if (log.isWarnEnabled()) {
 						log.warn("Failed to parse file [" + localInputFile.getCanonicalPath() + "]", e);
@@ -138,20 +151,17 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			}
 		}
 
-		Set<FileCopy> fileCopySucces = new HashSet<CompaniesFileCopyDriver.FileCopy>();
-		Set<FileCopy> fileCopySkips = new HashSet<CompaniesFileCopyDriver.FileCopy>();
+		Set<FileCopy> fileCopySuccess = new HashSet<CompaniesFileCopyDriver.FileCopy>();
+		Set<FileCopy> fileCopySkip = new HashSet<CompaniesFileCopyDriver.FileCopy>();
 		Set<FileCopy> fileCopyFailure = new HashSet<CompaniesFileCopyDriver.FileCopy>();
-		for (String companiesFileGroup : companiesFileMetaDatasByGroup.keySet()) {
-			for (CompaniesFileMetaData companiesFileMetaData : companiesFileMetaDatasByGroup.get(companiesFileGroup)) {
-				FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
-						companiesFileMetaData.getDirectory()),
-						new Path(hdfsOutputDir, companiesFileMetaData.getGroup()));
+		for (String companiesFileGroup : fileCopyByGroup.keySet()) {
+			for (FileCopy fileCopy : fileCopyByGroup.get(companiesFileGroup)) {
 				switch (fileCopy.call().status) {
 				case SUCCESS:
-					fileCopySucces.add(fileCopy);
+					fileCopySuccess.add(fileCopy);
 					break;
 				case SKIP:
-					fileCopySkips.add(fileCopy);
+					fileCopySkip.add(fileCopy);
 					break;
 				case FAILURE:
 					fileCopyFailure.add(fileCopy);
@@ -164,12 +174,12 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		List<Future<FileCopy>> copyFileFutures = new ArrayList<Future<FileCopy>>();
 		ExecutorService copyFileExector = new ThreadPoolExecutor(numberThreads, numberThreads, 0L,
 				TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		for (FileCopy fileCopy : fileCopySucces) {
+		for (FileCopy fileCopy : fileCopySuccess) {
 			fileCopy.mode = FileCopyMode.EXECUTE;
 			copyFileFutures.add(copyFileExector.submit(fileCopy));
 		}
 		copyFileExector.shutdown();
-		if (!copyFileExector.awaitTermination(getConf().getInt(CONF_TIMEOUT_SECS, 600) * fileCopySucces.size(),
+		if (!copyFileExector.awaitTermination(getConf().getInt(CONF_TIMEOUT_SECS, 600) * fileCopySuccess.size(),
 				TimeUnit.SECONDS)) {
 			copyFileExector.shutdownNow();
 		}
@@ -183,7 +193,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 							+ new Path(fileCopy.toDirectory, fileCopy.fromFile) + "]");
 				}
 				fileCopy.status = FileCopyStatus.FAILURE;
-				fileCopySucces.remove(fileCopy);
+				fileCopySuccess.remove(fileCopy);
 				fileCopyFailure.add(fileCopy);
 			}
 			if (fileCopyFuture.isCancelled() || !fileCopy.status.equals(FileCopyStatus.SUCCESS)) {
@@ -200,8 +210,37 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 								+ new Path(fileCopy.toDirectory, fileCopy.fromFile) + "]");
 					}
 				}
-				fileCopySucces.remove(fileCopy);
+				fileCopySuccess.remove(fileCopy);
 				fileCopyFailure.add(fileCopy);
+			}
+		}
+
+		for (FileCopy fileCopy : fileCopySuccess) {
+			fileCopyByGroup.get(fileCopy.group).remove(fileCopy);
+		}
+		for (FileCopy fileCopy : fileCopySuccess) {
+			fileCopyByGroup.get(fileCopy.group).remove(fileCopy);
+			if (fileCopyByGroup.get(fileCopy.group).size() == 0) {
+				getFileSystem().create(new Path(fileCopy.toDirectory, CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
+			} else {
+				for (FileCopy fileCopyTmp : fileCopyByGroup.get(fileCopy.group)) {
+					if (log.isErrorEnabled()) {
+						log.error("Files failed to copy in this files group, rolling back ingest of local input file ["
+								+ new Path(fileCopyTmp.fromDirectory, fileCopyTmp.fromFile) + "] to HDFS output file ["
+								+ new Path(fileCopyTmp.toDirectory, fileCopyTmp.fromFile) + "]");
+					}
+					fileCopyTmp.mode = FileCopyMode.CLEANUP;
+					if (!fileCopyTmp.call().status.equals(FileCopyStatus.SUCCESS)) {
+						if (log.isErrorEnabled()) {
+							log.error("Rollback failed for local input file ["
+									+ new Path(fileCopyTmp.fromDirectory, fileCopyTmp.fromFile)
+									+ "] to HDFS output file ["
+									+ new Path(fileCopyTmp.toDirectory, fileCopyTmp.fromFile) + "]");
+						}
+					}
+					fileCopySuccess.remove(fileCopyTmp);
+					fileCopyFailure.add(fileCopyTmp);
+				}
 			}
 		}
 
@@ -210,8 +249,8 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		isComplete.set(true);
 
 		if (log.isInfoEnabled()) {
-			log.info("File ingest complete, successfully processing [" + fileCopySucces.size() + "] files, skipping ["
-					+ fileCopySkips.size() + "] files and failing on [" + fileCopyFailure.size() + "] files with ["
+			log.info("File ingest complete, successfully processing [" + fileCopySuccess.size() + "] files, skipping ["
+					+ fileCopySkip.size() + "] files and failing on [" + fileCopyFailure.size() + "] files with ["
 					+ numberThreads + "] threads in [" + (System.currentTimeMillis() - time) + "] ms");
 		}
 
@@ -252,13 +291,15 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		private Path fromFile;
 		private Path fromDirectory;
 		private Path toDirectory;
+		private String group;
 		private FileCopyMode mode;
 		private FileCopyStatus status;
 
-		public FileCopy(Path fromFile, Path fromDirectory, Path toDirectory) throws IOException {
+		public FileCopy(Path fromFile, Path fromDirectory, Path toDirectory, String group) throws IOException {
 			this.fromFile = fromFile;
 			this.fromDirectory = fromDirectory;
 			this.toDirectory = toDirectory;
+			this.group = group;
 			this.mode = FileCopyMode.PREPARE;
 		}
 
