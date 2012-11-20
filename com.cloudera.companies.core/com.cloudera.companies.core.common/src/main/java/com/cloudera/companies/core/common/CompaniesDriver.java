@@ -2,6 +2,7 @@ package com.cloudera.companies.core.common;
 
 import java.util.Map.Entry;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
@@ -31,4 +32,11 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 		super.setConf(conf);
 	}
 
+	public void assertConfig() throws ConfigurationException {
+		if (!getConf().getBoolean(CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL, true)) {
+			throw new ConfigurationException("Configuraiton property ["
+					+ CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL
+					+ "] should be set to [true] in order for chained ingest operations to perform correctly");
+		}
+	}
 }

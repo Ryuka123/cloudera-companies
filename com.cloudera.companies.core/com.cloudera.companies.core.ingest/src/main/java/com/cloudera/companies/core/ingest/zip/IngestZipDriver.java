@@ -5,13 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -92,10 +93,11 @@ public class IngestZipDriver extends CompaniesDriver {
 					+ localInputDir.getAbsolutePath() + "]");
 		}
 
-		if (!getFileSystem().getConf().getBoolean(CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL, true)) {
+		try {
+			assertConfig();
+		} catch (ConfigurationException exception) {
 			if (log.isErrorEnabled()) {
-				log.error("Configuraiton property [" + CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL
-						+ "] should be set to [true] in order for ingest to ingest files correctly");
+				log.error("Invlaid confuration to run job", exception);
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
@@ -126,7 +128,7 @@ public class IngestZipDriver extends CompaniesDriver {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
 
-		Map<String, List<FileCopy>> fileCopyByGroup = new HashMap<String, List<FileCopy>>();
+		final Map<String, Set<FileCopy>> fileCopyByGroup = new ConcurrentHashMap<String, Set<FileCopy>>();
 		for (File localInputFile : localInputDir.listFiles()) {
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
@@ -134,10 +136,29 @@ public class IngestZipDriver extends CompaniesDriver {
 							localInputFile.getName(), localInputFile.getParent());
 					FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
 							companiesFileMetaData.getDirectory()), new Path(hdfsOutputDir,
-							companiesFileMetaData.getGroup()), companiesFileMetaData.getGroup());
-					List<FileCopy> fileCopys;
+							companiesFileMetaData.getGroup()), companiesFileMetaData.getGroup(),
+							new FileCopyCallback() {
+								@Override
+								public void afterCall(FileCopy that) throws IOException {
+									if (that.mode.equals(FileCopyMode.EXECUTE)
+											&& that.status.equals(FileCopyStatus.SUCCESS)) {
+										fileCopyByGroup.get(that.group).remove(that);
+										if (fileCopyByGroup.get(that.group).size() == 0) {
+											getFileSystem().create(
+													new Path(that.toDirectory,
+															CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
+											if (log.isInfoEnabled()) {
+												log.info("File group [" + that.group + "] successfully written to ["
+														+ that.toDirectory + "]");
+											}
+										}
+									}
+								}
+							});
+					Set<FileCopy> fileCopys;
 					if ((fileCopys = fileCopyByGroup.get(companiesFileMetaData.getGroup())) == null) {
-						fileCopyByGroup.put(companiesFileMetaData.getGroup(), (fileCopys = new ArrayList<FileCopy>()));
+						fileCopyByGroup.put(companiesFileMetaData.getGroup(),
+								(fileCopys = new CopyOnWriteArraySet<FileCopy>()));
 					}
 					fileCopys.add(fileCopy);
 				} catch (IOException e) {
@@ -168,12 +189,12 @@ public class IngestZipDriver extends CompaniesDriver {
 		}
 
 		int numberThreads = getConf().getInt(CONF_THREAD_NUMBER, 1);
-		List<Future<FileCopy>> copyFileFutures = new ArrayList<Future<FileCopy>>();
+		List<Future<FileCopy>> fileCopyFutures = new ArrayList<Future<FileCopy>>();
 		ExecutorService copyFileExector = new ThreadPoolExecutor(numberThreads, numberThreads, 0L,
 				TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		for (FileCopy fileCopy : fileCopySuccess) {
 			fileCopy.mode = FileCopyMode.EXECUTE;
-			copyFileFutures.add(copyFileExector.submit(fileCopy));
+			fileCopyFutures.add(copyFileExector.submit(fileCopy));
 		}
 		copyFileExector.shutdown();
 		if (!copyFileExector.awaitTermination(getConf().getInt(CONF_TIMEOUT_SECS, 600) * fileCopySuccess.size(),
@@ -181,7 +202,7 @@ public class IngestZipDriver extends CompaniesDriver {
 			copyFileExector.shutdownNow();
 		}
 
-		for (Future<FileCopy> fileCopyFuture : copyFileFutures) {
+		for (Future<FileCopy> fileCopyFuture : fileCopyFutures) {
 			FileCopy fileCopy = fileCopyFuture.get();
 			if (fileCopyFuture.isCancelled()) {
 				if (log.isErrorEnabled()) {
@@ -209,36 +230,6 @@ public class IngestZipDriver extends CompaniesDriver {
 				}
 				fileCopySuccess.remove(fileCopy);
 				fileCopyFailure.add(fileCopy);
-			}
-		}
-
-		for (FileCopy fileCopy : fileCopySuccess) {
-			fileCopyByGroup.get(fileCopy.group).remove(fileCopy);
-		}
-		for (FileCopy fileCopy : fileCopySuccess) {
-			fileCopyByGroup.get(fileCopy.group).remove(fileCopy);
-			if (fileCopyByGroup.get(fileCopy.group).size() == 0) {
-				getFileSystem().create(
-						new Path(fileCopy.toDirectory, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
-			} else {
-				for (FileCopy fileCopyTmp : fileCopyByGroup.get(fileCopy.group)) {
-					if (log.isErrorEnabled()) {
-						log.error("Files failed to copy in this files group, rolling back ingest of local input file ["
-								+ new Path(fileCopyTmp.fromDirectory, fileCopyTmp.fromFile) + "] to HDFS output file ["
-								+ new Path(fileCopyTmp.toDirectory, fileCopyTmp.fromFile) + "]");
-					}
-					fileCopyTmp.mode = FileCopyMode.CLEANUP;
-					if (!fileCopyTmp.call().status.equals(FileCopyStatus.SUCCESS)) {
-						if (log.isErrorEnabled()) {
-							log.error("Rollback failed for local input file ["
-									+ new Path(fileCopyTmp.fromDirectory, fileCopyTmp.fromFile)
-									+ "] to HDFS output file ["
-									+ new Path(fileCopyTmp.toDirectory, fileCopyTmp.fromFile) + "]");
-						}
-					}
-					fileCopySuccess.remove(fileCopyTmp);
-					fileCopyFailure.add(fileCopyTmp);
-				}
 			}
 		}
 
@@ -284,6 +275,12 @@ public class IngestZipDriver extends CompaniesDriver {
 		SUCCESS, SKIP, FAILURE
 	}
 
+	private interface FileCopyCallback {
+
+		public void afterCall(FileCopy that) throws IOException;
+
+	}
+
 	private class FileCopy implements Callable<FileCopy> {
 
 		private Path fromFile;
@@ -292,12 +289,15 @@ public class IngestZipDriver extends CompaniesDriver {
 		private String group;
 		private FileCopyMode mode;
 		private FileCopyStatus status;
+		private FileCopyCallback callback;
 
-		public FileCopy(Path fromFile, Path fromDirectory, Path toDirectory, String group) throws IOException {
+		public FileCopy(Path fromFile, Path fromDirectory, Path toDirectory, String group, FileCopyCallback callback)
+				throws IOException {
 			this.fromFile = fromFile;
 			this.fromDirectory = fromDirectory;
 			this.toDirectory = toDirectory;
 			this.group = group;
+			this.callback = callback;
 			this.mode = FileCopyMode.PREPARE;
 		}
 
@@ -334,6 +334,7 @@ public class IngestZipDriver extends CompaniesDriver {
 						+ new Path(fromDirectory, fromFile) + "] to HDFS output file ["
 						+ new Path(toDirectory, fromFile) + "]");
 			}
+			callback.afterCall(this);
 			return this;
 		}
 

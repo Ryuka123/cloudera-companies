@@ -139,7 +139,7 @@ public class IngestZipDriverTest extends CompaniesCDHTestCase {
 		}
 	}
 
-	public void testFileCopySingleThread() throws Exception {
+	public void testSingleThread() throws Exception {
 
 		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
 		String outputDir = getPathHDFS("/test-output");
@@ -158,10 +158,10 @@ public class IngestZipDriverTest extends CompaniesCDHTestCase {
 		}
 	}
 
-	public void testFileCopyMultiThread() throws Exception {
-		getFileSystem().getConf().set(IngestZipDriver.CONF_THREAD_NUMBER, "10");
+	public void testMultiThread() throws Exception {
+		getFileSystem().getConf().set(IngestZipDriver.CONF_THREAD_NUMBER, "3");
 		try {
-			testFileCopySingleThread();
+			testSingleThread();
 		} finally {
 			getFileSystem().getConf().set(IngestZipDriver.CONF_THREAD_NUMBER, "1");
 		}

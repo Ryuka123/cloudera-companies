@@ -11,7 +11,6 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
-import com.cloudera.companies.core.ingest.seq.IngestSeqDriver;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
 public class IngestSeqDriverTest extends CompaniesCDHTestCase {
@@ -137,13 +136,12 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 		}
 	}
 
-	public void testFileCopySingleThread() throws Exception {
+	public void test() throws Exception {
 
 		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
 		String outputDir = getPathHDFS("/test-output");
 
-		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
-				ingestSeqDriver.run(new String[] { inputDir, outputDir }));
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS, ingestSeqDriver.run(new String[] { inputDir, outputDir }));
 	}
 
 }
