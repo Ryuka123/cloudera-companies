@@ -329,12 +329,18 @@ public class IngestZipDriver extends CompaniesDriver {
 					log.error("File copy mode [" + mode + "] failed, exception to follow", e);
 				}
 			}
+			try {
+				callback.afterCall(this);
+			} catch (IOException e) {
+				if (log.isErrorEnabled()) {
+					log.error("File copy mode [" + mode + "] failed to execute callback, exception to follow", e);
+				}
+			}
 			if (log.isInfoEnabled()) {
 				log.info("File copy mode [" + mode + "] returned [" + status + "] during ingest of local input file ["
 						+ new Path(fromDirectory, fromFile) + "] to HDFS output file ["
 						+ new Path(toDirectory, fromFile) + "]");
 			}
-			callback.afterCall(this);
 			return this;
 		}
 
