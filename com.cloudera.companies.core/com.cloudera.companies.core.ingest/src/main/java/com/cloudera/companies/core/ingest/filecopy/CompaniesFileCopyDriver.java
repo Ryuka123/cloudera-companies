@@ -41,9 +41,6 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 	public static final String CONF_TIMEOUT_SECS = "companies.ingest.timeout.secs";
 	public static final String CONF_THREAD_NUMBER = "companies.ingest.thread.number";
 
-	public static final String CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL = "mapreduce.fileoutputcommitter.marksuccessfuljobs";
-	public static final String CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME = "_SUCCESS";
-
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
@@ -95,9 +92,9 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 					+ localInputDir.getAbsolutePath() + "]");
 		}
 
-		if (!getFileSystem().getConf().getBoolean(CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL, true)) {
+		if (!getFileSystem().getConf().getBoolean(CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL, true)) {
 			if (log.isErrorEnabled()) {
-				log.error("Configuraiton property [" + CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL
+				log.error("Configuraiton property [" + CompaniesDriver.CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL
 						+ "] should be set to [true] in order for ingest to ingest files correctly");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
@@ -221,7 +218,8 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 		for (FileCopy fileCopy : fileCopySuccess) {
 			fileCopyByGroup.get(fileCopy.group).remove(fileCopy);
 			if (fileCopyByGroup.get(fileCopy.group).size() == 0) {
-				getFileSystem().create(new Path(fileCopy.toDirectory, CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
+				getFileSystem().create(
+						new Path(fileCopy.toDirectory, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
 			} else {
 				for (FileCopy fileCopyTmp : fileCopyByGroup.get(fileCopy.group)) {
 					if (log.isErrorEnabled()) {

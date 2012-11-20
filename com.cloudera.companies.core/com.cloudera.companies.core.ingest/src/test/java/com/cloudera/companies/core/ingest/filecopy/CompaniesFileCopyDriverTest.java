@@ -152,7 +152,7 @@ public class CompaniesFileCopyDriverTest extends CompaniesCDHTestCase {
 				Assert.assertEquals(5, getFileSystem().listStatus(monthFileStatus.getPath()).length);
 				Assert.assertTrue(getFileSystem().exists(
 						new Path(monthFileStatus.getPath(),
-								CompaniesFileCopyDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)));
+								CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)));
 			}
 		}
 	}

@@ -11,10 +11,14 @@ import org.slf4j.LoggerFactory;
 public abstract class CompaniesDriver extends Configured implements Tool {
 
 	private static Logger log = LoggerFactory.getLogger(CompaniesDriver.class);
+
 	public static final int RETURN_SUCCESS = 0;
 	public static final int RETURN_FAILURE_MISSING_ARGS = 1;
 	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
 	public static final int RETURN_FAILURE_RUNTIME = 3;
+
+	public static final String CONF_MR_FILECOMMITTER_MARK_SUUCESSFUL = "mapreduce.fileoutputcommitter.marksuccessfuljobs";
+	public static final String CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME = "_SUCCESS";
 
 	@Override
 	public void setConf(Configuration conf) {
