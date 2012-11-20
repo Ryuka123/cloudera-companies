@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.etl;
+package com.cloudera.companies.core.ingest.seq;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -23,11 +23,11 @@ import org.slf4j.LoggerFactory;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
-import com.cloudera.companies.core.ingest.filecopy.CompaniesFileCopyDriver;
+import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
-public class CompaniesETLDriver extends CompaniesDriver {
+public class IngestSeqDriver extends CompaniesDriver {
 
-	private static Logger log = LoggerFactory.getLogger(CompaniesETLDriver.class);
+	private static Logger log = LoggerFactory.getLogger(IngestSeqDriver.class);
 
 	public static enum RecordCounter {
 		VALID, MALFORMED, MALFORMED_KEY, MALFORMED_DUPLICATE
@@ -44,7 +44,7 @@ public class CompaniesETLDriver extends CompaniesDriver {
 
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
-				log.error("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
+				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
 						+ " [generic options] <hdfs-input-dir> <hdfs-output-dir>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
@@ -118,8 +118,8 @@ public class CompaniesETLDriver extends CompaniesDriver {
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(Text.class);
 
-		job.setMapperClass(CompaniesETLMapper.class);
-		job.setReducerClass(CompaniesETLReducer.class);
+		job.setMapperClass(IngestSeqMapper.class);
+		job.setReducerClass(IngestSeqReducer.class);
 
 		job.setNumReduceTasks(1);
 
@@ -129,7 +129,7 @@ public class CompaniesETLDriver extends CompaniesDriver {
 		FileInputFormat.setInputPaths(job, hdfsInputtDir);
 		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
 
-		job.setJarByClass(CompaniesETLDriver.class);
+		job.setJarByClass(IngestSeqDriver.class);
 
 		if (log.isInfoEnabled()) {
 			log.info("File ingest ETL job about to be submitted");
@@ -167,6 +167,6 @@ public class CompaniesETLDriver extends CompaniesDriver {
 				}
 			}
 		}, RunJar.SHUTDOWN_HOOK_PRIORITY + 1);
-		System.exit(ToolRunner.run(new CompaniesETLDriver(), args));
+		System.exit(ToolRunner.run(new IngestSeqDriver(), args));
 	}
 }

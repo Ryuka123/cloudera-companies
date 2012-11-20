@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.etl;
+package com.cloudera.companies.core.ingest.seq;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,22 +11,24 @@ import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Assert;
 
-import com.cloudera.companies.core.ingest.etl.CompaniesETLDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.seq.IngestSeqMapper;
+import com.cloudera.companies.core.ingest.seq.IngestSeqReducer;
+import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
-public class CompaniesETLMapReduceTest extends CompaniesCDHTestCase {
+public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 
 	private MapDriver<LongWritable, Text, Text, Text> mapDriver;
 	private ReduceDriver<Text, Text, Text, Text> reduceDriver;
 	private MapReduceDriver<LongWritable, Text, Text, Text, Text, Text> mapReduceDriver;
 
-	public CompaniesETLMapReduceTest() throws IOException {
+	public IngestSeqMapReduceTest() throws IOException {
 	}
 
 	@Override
 	public void setUp() {
-		CompaniesETLMapper mapper = new CompaniesETLMapper();
-		CompaniesETLReducer reducer = new CompaniesETLReducer();
+		IngestSeqMapper mapper = new IngestSeqMapper();
+		IngestSeqReducer reducer = new IngestSeqReducer();
 		mapDriver = MapDriver.newMapDriver(mapper);
 		reduceDriver = ReduceDriver.newReduceDriver(reducer);
 		mapReduceDriver = MapReduceDriver.newMapReduceDriver(mapper, reducer);

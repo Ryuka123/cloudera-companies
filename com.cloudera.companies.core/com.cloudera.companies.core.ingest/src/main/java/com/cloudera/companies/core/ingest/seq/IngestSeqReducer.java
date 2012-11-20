@@ -1,11 +1,11 @@
-package com.cloudera.companies.core.ingest.etl;
+package com.cloudera.companies.core.ingest.seq;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import com.cloudera.companies.core.ingest.etl.CompaniesETLDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
 
-public class CompaniesETLReducer extends Reducer<Text, Text, Text, Text> {
+public class IngestSeqReducer extends Reducer<Text, Text, Text, Text> {
 
 	@Override
 	protected void reduce(Text key, Iterable<Text> values, Context context) throws java.io.IOException,

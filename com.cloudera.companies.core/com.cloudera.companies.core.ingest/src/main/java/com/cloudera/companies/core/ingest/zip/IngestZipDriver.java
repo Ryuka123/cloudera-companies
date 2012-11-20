@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.filecopy;
+package com.cloudera.companies.core.ingest.zip;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -34,9 +34,9 @@ import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.CompaniesFileMetaData;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
 
-public class CompaniesFileCopyDriver extends CompaniesDriver {
+public class IngestZipDriver extends CompaniesDriver {
 
-	private static Logger log = LoggerFactory.getLogger(CompaniesFileCopyDriver.class);
+	private static Logger log = LoggerFactory.getLogger(IngestZipDriver.class);
 
 	public static final String CONF_TIMEOUT_SECS = "companies.ingest.timeout.secs";
 	public static final String CONF_THREAD_NUMBER = "companies.ingest.thread.number";
@@ -54,7 +54,7 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
-				log.error("Usage: " + CompaniesFileCopyDriver.class.getSimpleName()
+				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
 						+ " [generic options] <local-input-dir> <hdfs-output-dir>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
@@ -148,9 +148,9 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 			}
 		}
 
-		Set<FileCopy> fileCopySuccess = new HashSet<CompaniesFileCopyDriver.FileCopy>();
-		Set<FileCopy> fileCopySkip = new HashSet<CompaniesFileCopyDriver.FileCopy>();
-		Set<FileCopy> fileCopyFailure = new HashSet<CompaniesFileCopyDriver.FileCopy>();
+		Set<FileCopy> fileCopySuccess = new HashSet<IngestZipDriver.FileCopy>();
+		Set<FileCopy> fileCopySkip = new HashSet<IngestZipDriver.FileCopy>();
+		Set<FileCopy> fileCopyFailure = new HashSet<IngestZipDriver.FileCopy>();
 		for (String companiesFileGroup : fileCopyByGroup.keySet()) {
 			for (FileCopy fileCopy : fileCopyByGroup.get(companiesFileGroup)) {
 				switch (fileCopy.call().status) {
@@ -365,6 +365,6 @@ public class CompaniesFileCopyDriver extends CompaniesDriver {
 				}
 			}
 		}, RunJar.SHUTDOWN_HOOK_PRIORITY + 1);
-		System.exit(ToolRunner.run(new CompaniesFileCopyDriver(), args));
+		System.exit(ToolRunner.run(new IngestZipDriver(), args));
 	}
 }

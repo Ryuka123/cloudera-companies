@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.ingest.etl;
+package com.cloudera.companies.core.ingest.seq;
 
 import java.io.IOException;
 
@@ -7,9 +7,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import com.cloudera.companies.core.common.CompaniesFileMetaData;
-import com.cloudera.companies.core.ingest.etl.CompaniesETLDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
 
-public class CompaniesETLMapper extends Mapper<LongWritable, Text, Text, Text> {
+public class IngestSeqMapper extends Mapper<LongWritable, Text, Text, Text> {
 
 	@Override
 	protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
