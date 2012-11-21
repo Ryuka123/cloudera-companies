@@ -59,7 +59,6 @@ public class CompaniesFileTest {
 		}
 		Assert.assertTrue(thrown);
 
-		int part = 1;
 		File testDataDir = new File("./target/test-data/data/basiccompany/sample/zip");
 		for (File testDataFile : testDataDir.listFiles()) {
 			CompaniesFileMetaData companiesFile = CompaniesFileMetaData.parsePathZip(testDataFile.getName(),

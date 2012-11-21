@@ -23,7 +23,6 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 	private static final String INPUT_GROUP = "2012/01";
 	private static final String INPUT_NAME = "Company X";
 	private static final Text INPUT_GROUP_TEXT = new Text(INPUT_GROUP);
-	private static final Text INPUT_NAME_TEXT = new Text(INPUT_NAME);
 	private static final CompaniesFileKey INPUT_KEY = new CompaniesFileKey(INPUT_GROUP, INPUT_NAME);
 	private static final String INPUT_RECORD = "\""
 			+ INPUT_NAME
