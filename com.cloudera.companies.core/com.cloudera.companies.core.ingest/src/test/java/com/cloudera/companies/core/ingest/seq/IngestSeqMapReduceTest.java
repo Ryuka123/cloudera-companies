@@ -4,23 +4,31 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Assert;
 
-import com.cloudera.companies.core.ingest.seq.IngestSeqMapper;
-import com.cloudera.companies.core.ingest.seq.IngestSeqReducer;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
 import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
 public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 
-	private MapDriver<LongWritable, Text, Text, Text> mapDriver;
-	private ReduceDriver<Text, Text, Text, Text> reduceDriver;
-	private MapReduceDriver<LongWritable, Text, Text, Text, Text, Text> mapReduceDriver;
+	private MapDriver<Text, Text, CompaniesFileKey, Text> mapDriver;
+	private ReduceDriver<CompaniesFileKey, Text, Text, Text> reduceDriver;
+	private MapReduceDriver<Text, Text, CompaniesFileKey, Text, Text, Text> mapReduceDriver;
+
+	private static final String INPUT_GROUP = "2012/01";
+	private static final String INPUT_NAME = "Company X";
+	private static final Text INPUT_GROUP_TEXT = new Text(INPUT_GROUP);
+	private static final Text INPUT_NAME_TEXT = new Text(INPUT_NAME);
+	private static final CompaniesFileKey INPUT_KEY = new CompaniesFileKey(INPUT_GROUP, INPUT_NAME);
+	private static final String INPUT_RECORD = "\""
+			+ INPUT_NAME
+			+ "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
+	private static final Text INPUT_RECORD_TEXT = new Text(INPUT_RECORD);
 
 	public IngestSeqMapReduceTest() throws IOException {
 	}
@@ -35,27 +43,23 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 	}
 
 	public void testMapperValid() {
-		String record = "\"Company X\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
-		mapDriver.withInput(new LongWritable(0), new Text(record));
-		mapDriver.withOutput(new Text("Company X"), new Text(record));
+		mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
+		mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
 		mapDriver.runTest();
 		Assert.assertEquals(1, mapDriver.getCounters().findCounter(RecordCounter.VALID).getValue());
 	}
 
 	public void testReducer() {
 		List<Text> values = new ArrayList<Text>();
-		values.add(new Text("\"Company X\""));
-		reduceDriver.withInput(new Text("Company X"), values);
-		reduceDriver.withOutput(new Text("Company X"), new Text("\"Company X\""));
+		values.add(INPUT_RECORD_TEXT);
+		reduceDriver.withInput(INPUT_KEY, values);
+		reduceDriver.withOutput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		reduceDriver.runTest();
 	}
 
 	public void testMapReduce() {
-		String record = "\"Company X\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
-		List<Text> values = new ArrayList<Text>();
-		values.add(new Text("\"Company X\""));
-		mapReduceDriver.withInput(new LongWritable(0), new Text(record));
-		mapReduceDriver.withOutput(new Text("Company X"), new Text(record));
+		mapReduceDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
+		mapReduceDriver.withOutput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapReduceDriver.runTest();
 	}
 

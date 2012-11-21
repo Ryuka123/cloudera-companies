@@ -1,19 +1,43 @@
 package com.cloudera.companies.core.ingest.seq;
 
+import java.io.IOException;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
+import com.cloudera.companies.core.common.CompaniesFileMetaData;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
 import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
 
-public class IngestSeqReducer extends Reducer<Text, Text, Text, Text> {
+public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text> {
+
+	private MultipleOutputs<Text, Text> multipleOutputs;
 
 	@Override
-	protected void reduce(Text key, Iterable<Text> values, Context context) throws java.io.IOException,
+	public void setup(Context context) {
+		multipleOutputs = new MultipleOutputs<Text, Text>(context);
+	}
+
+	@Override
+	public void cleanup(Context context) throws IOException, InterruptedException {
+		multipleOutputs.close();
+	}
+
+	@Override
+	protected void reduce(CompaniesFileKey key, Iterable<Text> values, Context context) throws java.io.IOException,
 			InterruptedException {
-		boolean recordProcessed = false;
+		String lastName = null;
 		for (Text value : values) {
-			if (!recordProcessed) {
-				context.write(key, value);
+			if (lastName == null || !lastName.equals(key.getName())) {
+				Text keyOutput = new Text(key.getGroup());
+				Text valueOutput = new Text(value);
+				try {
+					multipleOutputs.write(IngestSeqDriver.NAMED_OUTPUT_PARTION_SEQ_FILES, keyOutput, valueOutput,
+							CompaniesFileMetaData.parseGroup(key.getGroup()));
+				} catch (IllegalArgumentException exception) {
+					context.write(keyOutput, valueOutput);
+				}
 			} else {
 				context.getCounter(RecordCounter.VALID).increment(-1);
 				context.getCounter(RecordCounter.MALFORMED_DUPLICATE).increment(1);

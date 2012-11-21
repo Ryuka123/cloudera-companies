@@ -12,8 +12,8 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.RunJar;
@@ -24,6 +24,11 @@ import org.slf4j.LoggerFactory;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyCompositeComparator;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupComparator;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupPartitioner;
+import com.cloudera.companies.core.common.mapreduce.CompaniesFileZipFileInputFormat;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
 public class IngestSeqDriver extends CompaniesDriver {
@@ -34,6 +39,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 		VALID, MALFORMED, MALFORMED_KEY, MALFORMED_DUPLICATE
 	}
 
+	public static final String NAMED_OUTPUT_PARTION_SEQ_FILES = "PartionedSequenceFiles";
+	
 	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
 
 	@Override
@@ -122,7 +129,11 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		job.setJobName(getClass().getSimpleName());
 
-		job.setMapOutputKeyClass(Text.class);
+		job.setPartitionerClass(CompaniesFileKeyGroupPartitioner.class);
+		job.setGroupingComparatorClass(CompaniesFileKeyGroupComparator.class);
+		job.setSortComparatorClass(CompaniesFileKeyCompositeComparator.class);
+
+		job.setMapOutputKeyClass(CompaniesFileKey.class);
 		job.setMapOutputValueClass(Text.class);
 
 		job.setOutputKeyClass(Text.class);
@@ -131,13 +142,13 @@ public class IngestSeqDriver extends CompaniesDriver {
 		job.setMapperClass(IngestSeqMapper.class);
 		job.setReducerClass(IngestSeqReducer.class);
 
-		job.setNumReduceTasks(1);
-
-		job.setInputFormatClass(TextInputFormat.class);
+		job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		FileInputFormat.setInputPaths(job, hdfsInputtDir);
 		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
+
+		MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, TextOutputFormat.class, Text.class, Text.class);
 
 		job.setJarByClass(IngestSeqDriver.class);
 

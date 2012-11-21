@@ -132,7 +132,7 @@ public class IngestZipDriver extends CompaniesDriver {
 		for (File localInputFile : localInputDir.listFiles()) {
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
-					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parseFile(
+					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parsePathZip(
 							localInputFile.getName(), localInputFile.getParent());
 					FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
 							companiesFileMetaData.getDirectory()), new Path(hdfsOutputDir,
