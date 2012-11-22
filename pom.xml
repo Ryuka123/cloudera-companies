@@ -19,6 +19,8 @@
 
 	<properties>
 
+		<target.environment>DEVELOPMENT</target.environment>
+
 		<maven.test.skip>false</maven.test.skip>
 		<maven.system-test.skip>true</maven.system-test.skip>
 		<maven.integration-test.skip>true</maven.integration-test.skip>
@@ -40,6 +42,51 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 	</properties>
+
+	<profiles>
+		<profile>
+			<id>REL</id>
+			<properties>
+				<target.environment>RELEASE</target.environment>
+			</properties>
+		</profile>
+		<profile>
+			<id>DEV</id>
+			<properties>
+				<target.environment>DEVELOPMENT</target.environment>
+			</properties>
+		</profile>
+		<profile>
+			<id>PKG</id>
+			<properties>
+				<target.environment>RELEASE</target.environment>
+				<maven.test.skip>true</maven.test.skip>
+				<maven.system-test.skip>true</maven.system-test.skip>
+				<maven.integration-test.skip>true</maven.integration-test.skip>
+				<maven.assembly.skip>false</maven.assembly.skip>
+			</properties>
+		</profile>
+		<profile>
+			<id>PKGD</id>
+			<properties>
+				<target.environment>DEVELOPMENT</target.environment>
+				<maven.test.skip>true</maven.test.skip>
+				<maven.system-test.skip>true</maven.system-test.skip>
+				<maven.integration-test.skip>true</maven.integration-test.skip>
+				<maven.assembly.skip>false</maven.assembly.skip>
+			</properties>
+		</profile>
+		<profile>
+			<id>ITR</id>
+			<properties>
+				<target.environment>DEVELOPMENT</target.environment>
+				<maven.test.skip>true</maven.test.skip>
+				<maven.system-test.skip>true</maven.system-test.skip>
+				<maven.integration-test.skip>true</maven.integration-test.skip>
+				<maven.assembly.skip>true</maven.assembly.skip>
+			</properties>
+		</profile>
+	</profiles>
 
 	<modules>
 		<module>com.cloudera.companies.repo</module>

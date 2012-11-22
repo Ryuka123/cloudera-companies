@@ -19,7 +19,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -47,7 +46,7 @@ public class IngestZipDriver extends CompaniesDriver {
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
 
 	@Override
-	public int run(String[] args) throws Exception {
+	public int runCompaniesDriver(String[] args) throws Exception {
 
 		long time = System.currentTimeMillis();
 
@@ -91,15 +90,6 @@ public class IngestZipDriver extends CompaniesDriver {
 		if (log.isInfoEnabled()) {
 			log.info("Local input directory [" + localInputDirPath + "] validated as ["
 					+ localInputDir.getAbsolutePath() + "]");
-		}
-
-		try {
-			assertConfig();
-		} catch (ConfigurationException exception) {
-			if (log.isErrorEnabled()) {
-				log.error("Invlaid confuration to run job", exception);
-			}
-			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 
 		String hdfsOutputDirPath = args[1];

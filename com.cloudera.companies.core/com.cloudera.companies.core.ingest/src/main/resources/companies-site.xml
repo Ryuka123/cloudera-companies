@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+	<property>
+		<name>mapreduce.fileoutputcommitter.marksuccessfuljobs</name>
+		<value>${filter.compression}</value>
+	</property>
+	<property>
+		<name>mapred.compress.map.output</name>
+		<value>false</value>
+	</property>
+	<property>
+		<name>mapreduce.map.output.compress.codec</name>
+		<value>org.apache.hadoop.io.compress.SnappyCodec</value>
+	</property>
+	<property>
+		<name>mapred.output.compress</name>
+		<value>${filter.compression}</value>
+	</property>
+	<property>
+		<name>mapred.output.compression.codec</name>
+		<value>org.apache.hadoop.io.compress.SnappyCodec</value>
+	</property>
+	<property>
+		<name>mapred.output.compression.type</name>
+		<value>BLOCK</value>
+	</property>
+</configuration>

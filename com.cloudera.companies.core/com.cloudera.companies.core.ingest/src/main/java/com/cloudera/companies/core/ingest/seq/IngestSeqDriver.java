@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -14,6 +12,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.RunJar;
@@ -40,11 +39,11 @@ public class IngestSeqDriver extends CompaniesDriver {
 	}
 
 	public static final String NAMED_OUTPUT_PARTION_SEQ_FILES = "PartionedSequenceFiles";
-	
+
 	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
 
 	@Override
-	public int run(String[] args) throws Exception {
+	public int runCompaniesDriver(String[] args) throws Exception {
 
 		long time = System.currentTimeMillis();
 
@@ -113,19 +112,9 @@ public class IngestSeqDriver extends CompaniesDriver {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
 
-		try {
-			assertConfig();
-		} catch (ConfigurationException exception) {
-			if (log.isErrorEnabled()) {
-				log.error("Invlaid confuration to run job", exception);
-			}
-			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
-		}
-
 		hdfs.close();
 
-		Configuration conf = new Configuration();
-		Job job = new Job(conf);
+		Job job = new Job(getConf());
 
 		job.setJobName(getClass().getSimpleName());
 
@@ -148,7 +137,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 		FileInputFormat.setInputPaths(job, hdfsInputtDir);
 		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
 
-		MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, TextOutputFormat.class, Text.class, Text.class);
+		MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, SequenceFileOutputFormat.class, Text.class,
+				Text.class);
 
 		job.setJarByClass(IngestSeqDriver.class);
 
