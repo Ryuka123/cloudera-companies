@@ -11,6 +11,7 @@ function download() {
 			for (( PART=1; PART<=$5; PART++ )); do
 				FILE="BasicCompanyData-"$YEAR"-"$(printf '%02d' $MONTH)"-01-part"$PART"_"$5".zip"
 				URI="http://download.companieshouse.gov.uk/"$FILE
+				echo "Checking file ["$FILE"] available from ["$URI"]"
 				if [ ! -f $FILE ]; then
 					if [[ $(date +%Y) -gt $YEAR || ($(date +%Y) -eq $YEAR && $(date +'%-m') -gt $MONTH) ]]; then
 						if [ $(curl -sI $URI | grep "HTTP/1.1 200 OK" | wc -l) -gt 0 ]; then

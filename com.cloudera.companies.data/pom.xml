@@ -23,8 +23,8 @@
 						<id>prepare</id>
 						<phase>validate</phase>
 						<configuration>
-							<target>
-								<echo message="Downloading data files" />
+							<target unless="maven.data-download.skip">
+								<echo message="Downloading data files (skip by defining 'maven.data-download.skip')" />
 								<exec executable="src/main/resources/data/basiccompany/bin/download.sh">
 									<arg value="src/data/resources/basiccompany" />
 								</exec>
