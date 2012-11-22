@@ -11,10 +11,12 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
+import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 import com.cloudera.companies.core.test.CompaniesCDHTestCase;
 
 public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 
+	private IngestZipDriver ingestZipDriver;
 	private IngestSeqDriver ingestSeqDriver;
 
 	public IngestSeqDriverTest() throws IOException {
@@ -24,6 +26,8 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		ingestZipDriver = new IngestZipDriver();
+		ingestZipDriver.setConf(getFileSystem().getConf());
 		ingestSeqDriver = new IngestSeqDriver();
 		ingestSeqDriver.setConf(getFileSystem().getConf());
 	}
@@ -138,10 +142,15 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 
 	public void test() throws Exception {
 
-		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
-		String outputDir = getPathHDFS("/test-output");
+		String inputDirZip = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
+		String outputDirZip = getPathHDFS("/test-output/zip");
+		String outputDirSeq = getPathHDFS("/test-output/seq");
 
-		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS, ingestSeqDriver.run(new String[] { inputDir, outputDir }));
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
+				ingestZipDriver.run(new String[] { inputDirZip, outputDirZip }));
+
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
+				ingestSeqDriver.run(new String[] { outputDirZip, outputDirSeq }));
 	}
 
 }

@@ -102,7 +102,7 @@ public class IngestZipDriver extends CompaniesDriver {
 				}
 				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 			}
-			if (!HDFSClientUtil.canPerformAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
+			if (!HDFSClientUtil.canDoAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
 					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir, FsAction.ALL)) {
 				if (log.isErrorEnabled()) {
 					log.error("HDFS output directory [" + hdfsOutputDirPath

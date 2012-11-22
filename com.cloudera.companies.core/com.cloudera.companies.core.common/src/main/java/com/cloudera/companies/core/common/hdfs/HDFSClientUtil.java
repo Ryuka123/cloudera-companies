@@ -10,9 +10,9 @@ import org.apache.hadoop.fs.permission.FsPermission;
 
 public class HDFSClientUtil {
 
-	public static boolean canPerformAction(FileSystem hdfs, String user, String[] groups, Path path, FsAction action)
+	public static boolean canDoAction(FileSystem fileSystem, String user, String[] groups, Path path, FsAction action)
 			throws IOException {
-		FileStatus status = hdfs.getFileStatus(path);
+		FileStatus status = fileSystem.getFileStatus(path);
 		FsPermission permission = status.getPermission();
 		if (permission.getOtherAction().implies(action)) {
 			return true;

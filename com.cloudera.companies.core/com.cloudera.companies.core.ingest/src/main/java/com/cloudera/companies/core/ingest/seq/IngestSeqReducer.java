@@ -30,6 +30,7 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 		String lastName = null;
 		for (Text value : values) {
 			if (lastName == null || !lastName.equals(key.getName())) {
+				lastName = key.getName();
 				Text keyOutput = new Text(key.getGroup());
 				Text valueOutput = new Text(value);
 				try {
