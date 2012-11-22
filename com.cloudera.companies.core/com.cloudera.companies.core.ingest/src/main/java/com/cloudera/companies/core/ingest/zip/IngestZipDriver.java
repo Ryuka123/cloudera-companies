@@ -24,8 +24,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.RunJar;
-import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,15 +41,19 @@ public class IngestZipDriver extends CompaniesDriver {
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
+	private File localInputDir;
+	private Path hdfsOutputDir;
+
+	private String localInputDirPath;
+	private String hdfsOutputDirPath;
+
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
 
 	@Override
-	public int runCompaniesDriver(String[] args) throws Exception {
-
-		long time = System.currentTimeMillis();
+	public int prepare(String[] args) {
 
 		isComplete.set(false);
-
+		
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
@@ -65,8 +67,16 @@ public class IngestZipDriver extends CompaniesDriver {
 			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		String localInputDirPath = args[0];
-		File localInputDir = new File(localInputDirPath);
+		localInputDirPath = args[0];
+		hdfsOutputDirPath = args[1];
+
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int validate() throws IOException {
+
+		localInputDir = new File(localInputDirPath);
 		if (!localInputDir.exists()) {
 			if (log.isErrorEnabled()) {
 				log.error("Local input directory [" + localInputDirPath + "] does not exist");
@@ -92,8 +102,7 @@ public class IngestZipDriver extends CompaniesDriver {
 					+ localInputDir.getAbsolutePath() + "]");
 		}
 
-		String hdfsOutputDirPath = args[1];
-		Path hdfsOutputDir = new Path(hdfsOutputDirPath);
+		hdfsOutputDir = new Path(hdfsOutputDirPath);
 		final FileSystem hdfs = getFileSystem();
 		if (hdfs.exists(hdfsOutputDir)) {
 			if (!hdfs.isDirectory(hdfsOutputDir)) {
@@ -117,6 +126,12 @@ public class IngestZipDriver extends CompaniesDriver {
 		if (log.isInfoEnabled()) {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
+
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int execute() throws Exception {
 
 		final Map<String, Set<FileCopy>> fileCopyByGroup = new ConcurrentHashMap<String, Set<FileCopy>>();
 		for (File localInputFile : localInputDir.listFiles()) {
@@ -223,17 +238,36 @@ public class IngestZipDriver extends CompaniesDriver {
 			}
 		}
 
-		closeFileSystems();
-
 		isComplete.set(true);
 
 		if (log.isInfoEnabled()) {
 			log.info("File ingest complete, successfully processing [" + fileCopySuccess.size() + "] files, skipping ["
 					+ fileCopySkip.size() + "] files and failing on [" + fileCopyFailure.size() + "] files with ["
-					+ numberThreads + "] threads in [" + (System.currentTimeMillis() - time) + "] ms");
+					+ numberThreads + "] threads");
 		}
 
 		return fileCopyFailure.size() == 0 ? CompaniesDriver.RETURN_SUCCESS : CompaniesDriver.RETURN_FAILURE_RUNTIME;
+
+	}
+
+	@Override
+	public int cleanup() throws IOException {
+
+		closeFileSystems();
+
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int shutdown() {
+
+		if (!isComplete.get()) {
+			if (log.isErrorEnabled()) {
+				log.error("Halting before completion, files may only be partly copied to HDFS");
+			}
+		}
+
+		return RETURN_SUCCESS;
 	}
 
 	/**
@@ -352,16 +386,7 @@ public class IngestZipDriver extends CompaniesDriver {
 	}
 
 	public static void main(String[] args) throws Exception {
-		ShutdownHookManager.get().addShutdownHook(new Runnable() {
-			@Override
-			public void run() {
-				if (!isComplete.get()) {
-					if (log.isErrorEnabled()) {
-						log.error("Halting before completion, files may only be partly copied to HDFS");
-					}
-				}
-			}
-		}, RunJar.SHUTDOWN_HOOK_PRIORITY + 1);
 		System.exit(ToolRunner.run(new IngestZipDriver(), args));
 	}
+
 }

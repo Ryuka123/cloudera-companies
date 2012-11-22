@@ -1,6 +1,7 @@
 package com.cloudera.companies.core.ingest.seq;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,8 +20,6 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.util.RunJar;
-import org.apache.hadoop.util.ShutdownHookManager;
 import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +45,17 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
 
-	@Override
-	public int runCompaniesDriver(String[] args) throws Exception {
+	private Path hdfsOutputDir;
+	private Set<Path> hdfsInputDirs;
 
-		long time = System.currentTimeMillis();
+	private String hdfsInputDirPath;
+	private String hdfsOutputDirPath;
+
+	@Override
+	public int prepare(String[] args) {
 
 		jobSubmitted.set(false);
-
+		
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
@@ -66,9 +69,17 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		final FileSystem hdfsFileSystem = FileSystem.get(getConf());
+		hdfsInputDirPath = args[0];
+		hdfsOutputDirPath = args[1];
 
-		String hdfsInputDirPath = args[0];
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int validate() throws IOException {
+
+		FileSystem hdfsFileSystem = FileSystem.get(getConf());
+
 		Path hdfsInputDir = new Path(hdfsInputDirPath);
 		if (!hdfsFileSystem.exists(hdfsInputDir)) {
 			if (log.isErrorEnabled()) {
@@ -95,8 +106,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 			log.info("HDFS output directory [" + hdfsInputDirPath + "] validated as [" + hdfsInputDir + "]");
 		}
 
-		String hdfsOutputDirPath = args[1];
-		Path hdfsOutputDir = new Path(hdfsOutputDirPath);
+		hdfsOutputDir = new Path(hdfsOutputDirPath);
 		if (hdfsFileSystem.exists(hdfsOutputDir)) {
 			if (log.isErrorEnabled()) {
 				log.error("HDFS output directory [" + hdfsOutputDirPath + "] already exists");
@@ -116,7 +126,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
 		}
 
-		Set<Path> hdfsInputDirs = new HashSet<Path>();
+		hdfsInputDirs = new HashSet<Path>();
 		RemoteIterator<LocatedFileStatus> inputFiles = hdfsFileSystem.listFiles(hdfsInputDir, true);
 		while (inputFiles.hasNext()) {
 			LocatedFileStatus fileStatus = inputFiles.next();
@@ -137,7 +147,11 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return RETURN_SUCCESS;
 		}
 
-		hdfsFileSystem.close();
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int execute() throws IOException, InterruptedException, ClassNotFoundException {
 
 		Job job = new Job(getConf());
 
@@ -175,34 +189,39 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		int exitCode = job.waitForCompletion(true) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
 
-		if (exitCode == RETURN_SUCCESS) {
-			if (log.isInfoEnabled()) {
-				log.info("Sequence file ingest complete in [" + (System.currentTimeMillis() - time) + "] ms");
-			}
-		} else {
-			if (log.isInfoEnabled()) {
-				log.info("Sequence file ingest failed in [" + (System.currentTimeMillis() - time) + "] ms");
-			}
+		if (log.isInfoEnabled()) {
+			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));
 		}
 
 		return exitCode;
+
+	}
+
+	@Override
+	public int cleanup() throws IOException {
+
+		FileSystem.get(getConf()).close();
+
+		return RETURN_SUCCESS;
+	}
+
+	@Override
+	public int shutdown() {
+
+		if (jobSubmitted.get()) {
+			if (log.isErrorEnabled()) {
+				log.error("Halting before job completion, job submitted and will continue in the background");
+			}
+		} else {
+			if (log.isErrorEnabled()) {
+				log.error("Halting before job submitted");
+			}
+		}
+
+		return RETURN_SUCCESS;
 	}
 
 	public static void main(String[] args) throws Exception {
-		ShutdownHookManager.get().addShutdownHook(new Runnable() {
-			@Override
-			public void run() {
-				if (jobSubmitted.get()) {
-					if (log.isErrorEnabled()) {
-						log.error("Halting before job completion, job submitted and will continue in the background");
-					}
-				} else {
-					if (log.isErrorEnabled()) {
-						log.error("Halting before job submitted");
-					}
-				}
-			}
-		}, RunJar.SHUTDOWN_HOOK_PRIORITY + 1);
 		System.exit(ToolRunner.run(new IngestSeqDriver(), args));
 	}
 }
