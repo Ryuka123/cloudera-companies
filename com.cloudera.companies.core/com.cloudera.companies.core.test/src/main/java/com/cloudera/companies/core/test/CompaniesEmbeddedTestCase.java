@@ -1,6 +1,5 @@
 package com.cloudera.companies.core.test;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.apache.hadoop.fs.FileSystem;
@@ -8,16 +7,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.mapred.HadoopTestCase;
+import org.junit.After;
+import org.junit.Before;
 
-/**
- * 
- * Note that this class necessitates the use of JUnit3 parlance since
- * {@link HadoopTestCase} is yet to updated for JUnit4.
- * 
- */
-public abstract class CompaniesCDHTestCase extends HadoopTestCase {
-
-	protected static String LOCAL_DIR = new File(".").getAbsolutePath();
+public abstract class CompaniesEmbeddedTestCase extends HadoopTestCase implements CompaniesBaseTest {
 
 	protected static String HDFS_DIR = "target/test-hdfs";
 	protected static String HDFS_DIR_TMP = HDFS_DIR + "/tmp";
@@ -25,7 +18,7 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 	protected static Path HDFS_PATH = new Path(HDFS_DIR);
 	protected static Path HDFS_PATH_TMP = new Path(HDFS_DIR_TMP);
 
-	public CompaniesCDHTestCase() throws IOException {
+	public CompaniesEmbeddedTestCase() throws IOException {
 		super(HadoopTestCase.LOCAL_MR, HadoopTestCase.LOCAL_FS, 2, 2);
 
 		// Necessary to avoid warnings printed to console on OS-X
@@ -35,9 +28,9 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 
 	public String getPathLocal(String pathRelativeToModuleRoot) {
 		String pathRelativeToModuleRootLessLeadingSlashes = stripLeadingSlashes(pathRelativeToModuleRoot);
-		return pathRelativeToModuleRootLessLeadingSlashes.equals("") ? (LOCAL_DIR.length() < 2 ? "/" : LOCAL_DIR
-				.substring(0, LOCAL_DIR.length() - 2))
-				: new Path(LOCAL_DIR, pathRelativeToModuleRootLessLeadingSlashes).toUri().toString();
+		return pathRelativeToModuleRootLessLeadingSlashes.equals("") ? (WORKING_DIR.length() < 2 ? "/" : WORKING_DIR
+				.substring(0, WORKING_DIR.length() - 2)) : new Path(WORKING_DIR,
+				pathRelativeToModuleRootLessLeadingSlashes).toUri().toString();
 	}
 
 	public String getPathHDFS(String pathRelativeToHDFSRoot) {
@@ -47,7 +40,8 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		super.setUp();
 		FileSystem fileSystem = getFileSystem();
 		if (fileSystem != null) {
@@ -59,7 +53,8 @@ public abstract class CompaniesCDHTestCase extends HadoopTestCase {
 	}
 
 	@Override
-	protected void tearDown() throws Exception {
+	@After
+	public void tearDown() throws Exception {
 		super.tearDown();
 	}
 

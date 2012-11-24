@@ -22,6 +22,8 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	public static final String CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME = "_SUCCESS";
 
+	private volatile int exitValue = RETURN_FAILURE_RUNTIME;
+
 	public abstract int prepare(String[] args) throws Exception;
 
 	public abstract int validate() throws Exception;
@@ -42,7 +44,9 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 			@Override
 			public void run() {
 				try {
-					shutdown();
+					if (exitValue == RETURN_SUCCESS) {
+						shutdown();
+					}
 				} catch (Exception exception) {
 					if (log.isErrorEnabled()) {
 						log.error("Exception raised executing shutdown handler", exception);
@@ -62,7 +66,6 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 					log.debug("\t" + entry.getKey() + "=" + entry.getValue());
 		}
 
-		int exitValue = RETURN_FAILURE_RUNTIME;
 		try {
 			if ((exitValue = prepare(args)) == RETURN_SUCCESS && (exitValue = validate()) == RETURN_SUCCESS) {
 				timeExecute = System.currentTimeMillis();

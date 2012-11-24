@@ -6,7 +6,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CompaniesFileTest {
+import com.cloudera.companies.core.test.CompaniesBaseTestCase;
+
+public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 	@Test
 	public void testParsePath() throws IOException {

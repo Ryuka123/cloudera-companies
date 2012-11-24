@@ -8,21 +8,21 @@ import junit.framework.Assert;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-public class CompaniesCDHTestCaseTest extends CompaniesCDHTestCase {
+public class CompaniesCDHTestCaseTest extends CompaniesEmbeddedTestCase {
 
 	public CompaniesCDHTestCaseTest() throws IOException {
 		super();
 	}
 
 	public void testPathHDFS() {
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS(""));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("/"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR, getPathHDFS("//"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("tmp"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("/tmp"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("//tmp"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp", getPathHDFS("///tmp"));
-		Assert.assertEquals(CompaniesCDHTestCase.HDFS_DIR + "/tmp/tmp", getPathHDFS("///tmp//tmp"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR, getPathHDFS(""));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR, getPathHDFS("/"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR, getPathHDFS("//"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR + "/tmp", getPathHDFS("tmp"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR + "/tmp", getPathHDFS("/tmp"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR + "/tmp", getPathHDFS("//tmp"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR + "/tmp", getPathHDFS("///tmp"));
+		Assert.assertEquals(CompaniesEmbeddedTestCase.HDFS_DIR + "/tmp/tmp", getPathHDFS("///tmp//tmp"));
 	}
 
 	public void testPathLocal() {

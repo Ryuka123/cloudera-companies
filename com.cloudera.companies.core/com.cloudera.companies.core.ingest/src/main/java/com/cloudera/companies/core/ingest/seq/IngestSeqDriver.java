@@ -55,7 +55,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	public int prepare(String[] args) {
 
 		jobSubmitted.set(false);
-		
+
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
@@ -208,11 +208,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int shutdown() {
 
-		if (jobSubmitted.get()) {
-			if (log.isErrorEnabled()) {
-				log.error("Halting before job completion, job submitted and will continue in the background");
-			}
-		} else {
+		if (!jobSubmitted.get()) {
 			if (log.isErrorEnabled()) {
 				log.error("Halting before job submitted");
 			}

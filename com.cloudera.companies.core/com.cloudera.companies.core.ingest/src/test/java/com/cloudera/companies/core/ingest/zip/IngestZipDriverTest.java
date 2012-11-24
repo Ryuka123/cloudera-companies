@@ -3,19 +3,19 @@ package com.cloudera.companies.core.ingest.zip;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
-import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
-import com.cloudera.companies.core.test.CompaniesCDHTestCase;
+import com.cloudera.companies.core.test.CompaniesEmbeddedTestCase;
 
-public class IngestZipDriverTest extends CompaniesCDHTestCase {
+public class IngestZipDriverTest extends CompaniesEmbeddedTestCase {
 
 	private IngestZipDriver ingestZipDriver;
 
@@ -24,12 +24,14 @@ public class IngestZipDriverTest extends CompaniesCDHTestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		super.setUp();
 		ingestZipDriver = new IngestZipDriver();
 		ingestZipDriver.setConf(getFileSystem().getConf());
 	}
 
+	@Test
 	public void testLaunchInvalid() throws Exception {
 
 		String inputDir = getPathLocal("/target/test-data");
@@ -47,8 +49,7 @@ public class IngestZipDriverTest extends CompaniesCDHTestCase {
 		try {
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestZipDriver.run(null));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestZipDriver.run(new String[0]));
-			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
-					ingestZipDriver.run(new String[] {}));
+			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestZipDriver.run(new String[] {}));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
 					ingestZipDriver.run(new String[] { getPathLocal("") }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
@@ -139,25 +140,25 @@ public class IngestZipDriverTest extends CompaniesCDHTestCase {
 		}
 	}
 
+	@Test
 	public void testSingleThread() throws Exception {
 
 		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
 		String outputDir = getPathHDFS("/test-output");
 
-		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
-				ingestZipDriver.run(new String[] { inputDir, outputDir }));
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS, ingestZipDriver.run(new String[] { inputDir, outputDir }));
 		Assert.assertEquals(1, getFileSystem().listStatus(new Path(outputDir)).length);
 		for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
 			Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
 			for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
 				Assert.assertEquals(5, getFileSystem().listStatus(monthFileStatus.getPath()).length);
 				Assert.assertTrue(getFileSystem().exists(
-						new Path(monthFileStatus.getPath(),
-								CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)));
+						new Path(monthFileStatus.getPath(), CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)));
 			}
 		}
 	}
 
+	@Test
 	public void testMultiThread() throws Exception {
 		getFileSystem().getConf().set(IngestZipDriver.CONF_THREAD_NUMBER, "3");
 		try {

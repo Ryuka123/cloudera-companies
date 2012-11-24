@@ -3,18 +3,19 @@ package com.cloudera.companies.core.ingest.seq;
 import java.io.File;
 import java.io.IOException;
 
-import junit.framework.Assert;
-
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
-import com.cloudera.companies.core.test.CompaniesCDHTestCase;
+import com.cloudera.companies.core.test.CompaniesEmbeddedTestCase;
 
-public class IngestSeqDriverTest extends CompaniesCDHTestCase {
+public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 
 	private IngestZipDriver ingestZipDriver;
 	private IngestSeqDriver ingestSeqDriver;
@@ -24,7 +25,8 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 	}
 
 	@Override
-	protected void setUp() throws Exception {
+	@Before
+	public void setUp() throws Exception {
 		super.setUp();
 		ingestZipDriver = new IngestZipDriver();
 		ingestZipDriver.setConf(getFileSystem().getConf());
@@ -32,6 +34,7 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 		ingestSeqDriver.setConf(getFileSystem().getConf());
 	}
 
+	@Test
 	public void testLaunchInvalid() throws Exception {
 
 		String inputDir = getPathHDFS("/test-input");
@@ -140,6 +143,7 @@ public class IngestSeqDriverTest extends CompaniesCDHTestCase {
 		}
 	}
 
+	@Test
 	public void test() throws Exception {
 
 		String inputDirZip = getPathLocal("/target/test-data/data/basiccompany/sample/zip");

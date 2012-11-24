@@ -26,8 +26,8 @@
 			<version>${opencsv.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.cloudera.companies.repo.bom.cdh.client</groupId>
-			<artifactId>com.cloudera.companies.repo.bom.cdh.client.core</artifactId>
+			<groupId>com.cloudera.companies.repo.bom.cdh.api</groupId>
+			<artifactId>com.cloudera.companies.repo.bom.cdh.api.core</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
 			<scope>provided</scope>
@@ -35,6 +35,12 @@
 		<dependency>
 			<groupId>com.cloudera.companies</groupId>
 			<artifactId>com.cloudera.companies.data</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.cloudera.companies.core</groupId>
+			<artifactId>com.cloudera.companies.core.test</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

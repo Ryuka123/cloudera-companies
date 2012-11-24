@@ -9,12 +9,14 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
 import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
-import com.cloudera.companies.core.test.CompaniesCDHTestCase;
+import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 
-public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
+public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 
 	private MapDriver<Text, Text, CompaniesFileKey, Text> mapDriver;
 	private ReduceDriver<CompaniesFileKey, Text, Text, Text> reduceDriver;
@@ -32,7 +34,7 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 	public IngestSeqMapReduceTest() throws IOException {
 	}
 
-	@Override
+	@Before
 	public void setUp() {
 		IngestSeqMapper mapper = new IngestSeqMapper();
 		IngestSeqReducer reducer = new IngestSeqReducer();
@@ -41,6 +43,7 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 		mapReduceDriver = MapReduceDriver.newMapReduceDriver(mapper, reducer);
 	}
 
+	@Test
 	public void testMapperValid() {
 		mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
@@ -48,6 +51,7 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 		Assert.assertEquals(1, mapDriver.getCounters().findCounter(RecordCounter.VALID).getValue());
 	}
 
+	@Test
 	public void testReducer() {
 		List<Text> values = new ArrayList<Text>();
 		values.add(INPUT_RECORD_TEXT);
@@ -56,6 +60,7 @@ public class IngestSeqMapReduceTest extends CompaniesCDHTestCase {
 		reduceDriver.runTest();
 	}
 
+	@Test
 	public void testMapReduce() {
 		mapReduceDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapReduceDriver.withOutput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
