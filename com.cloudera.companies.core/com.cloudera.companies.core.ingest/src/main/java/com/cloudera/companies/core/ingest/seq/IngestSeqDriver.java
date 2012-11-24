@@ -153,7 +153,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int execute() throws IOException, InterruptedException, ClassNotFoundException {
 
-		Job job = new Job(getConf());
+		Job job = Job.getInstance(getConf());
 
 		job.setJobName(getClass().getSimpleName());
 
