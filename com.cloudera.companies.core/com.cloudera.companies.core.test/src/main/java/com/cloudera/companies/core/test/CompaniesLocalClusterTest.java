@@ -12,8 +12,8 @@ public class CompaniesLocalClusterTest extends ClusterMapReduceTestCase implemen
 		super();
 	}
 
-	@Override
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		if (System.getProperty("test.build.data") == null) {
 			System.setProperty("test.build.data", WORKING_DIR_RUNTIME + "build");
@@ -24,8 +24,8 @@ public class CompaniesLocalClusterTest extends ClusterMapReduceTestCase implemen
 		super.setUp();
 	}
 
-	@Override
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		super.tearDown();
 	}

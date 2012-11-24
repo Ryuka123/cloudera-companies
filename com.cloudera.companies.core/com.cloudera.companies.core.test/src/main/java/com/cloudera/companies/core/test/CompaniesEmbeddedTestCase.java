@@ -39,8 +39,8 @@ public abstract class CompaniesEmbeddedTestCase extends HadoopTestCase implement
 				pathRelativeToHDFSRootLessLeadingSlashes).toUri().toString();
 	}
 
-	@Override
 	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 		FileSystem fileSystem = getFileSystem();
@@ -52,8 +52,8 @@ public abstract class CompaniesEmbeddedTestCase extends HadoopTestCase implement
 		}
 	}
 
-	@Override
 	@After
+	@Override
 	public void tearDown() throws Exception {
 		super.tearDown();
 	}
