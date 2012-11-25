@@ -27,6 +27,6 @@ public class CompaniesLocalTest extends CompaniesLocalClusterTest {
 		String outputDir = "target";
 
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS, ingestZipDriver.run(new String[] { inputDir, outputDir }));
-
+		
 	}
 }

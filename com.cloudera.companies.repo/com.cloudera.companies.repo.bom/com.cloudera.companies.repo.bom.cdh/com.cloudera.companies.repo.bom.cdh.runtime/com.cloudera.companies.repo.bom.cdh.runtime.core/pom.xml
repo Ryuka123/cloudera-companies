@@ -14,12 +14,6 @@
 	</parent>
 
 	<dependencies>
-<!-- 		<dependency>
-			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-dist</artifactId>
-			<version>${hadoop.version}</version>
-			<type>tar.gz</type>
-		</dependency> -->
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>

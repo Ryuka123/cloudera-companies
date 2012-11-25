@@ -36,6 +36,7 @@
 		<mrunit.version>0.9.0-incubating</mrunit.version>
 
 		<project.runtime-test-dir>test-runtime</project.runtime-test-dir>
+		<project.assembly-test-dir>test-assembly</project.assembly-test-dir>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
