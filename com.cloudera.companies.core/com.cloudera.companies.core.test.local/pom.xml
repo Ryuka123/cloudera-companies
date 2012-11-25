@@ -29,6 +29,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.cloudera.companies</groupId>
+			<artifactId>com.cloudera.companies.data</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudera.companies.core</groupId>
 			<artifactId>com.cloudera.companies.core.test</artifactId>
 			<version>${project.version}</version>
@@ -56,6 +62,23 @@
 				<configuration>
 					<skipTests>${maven.system-test.skip}</skipTests>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack-data-sample</id>
+						<phase>process-test-resources</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeArtifactIds>com.cloudera.companies.data</includeArtifactIds>
+							<outputDirectory>${project.build.directory}/test-data</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

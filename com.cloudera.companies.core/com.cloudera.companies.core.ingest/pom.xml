@@ -74,7 +74,7 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>resource-dependencies</id>
+						<id>unpack-data-sample</id>
 						<phase>process-test-resources</phase>
 						<goals>
 							<goal>unpack-dependencies</goal>

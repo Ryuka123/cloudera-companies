@@ -2,6 +2,7 @@ package com.cloudera.companies.core.common;
 
 import java.util.Map.Entry;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.RunJar;
 import org.apache.hadoop.util.ShutdownHookManager;
@@ -33,6 +34,14 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 	public abstract int cleanup() throws Exception;
 
 	public abstract int shutdown() throws Exception;
+
+	public CompaniesDriver() {
+		super();
+	}
+
+	public CompaniesDriver(Configuration conf) {
+		super(conf);
+	}
 
 	@Override
 	public int run(String[] args) {
@@ -95,12 +104,12 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 		if (exitValue == RETURN_SUCCESS) {
 			if (log.isInfoEnabled()) {
 				log.info("Driver [" + this.getClass().getCanonicalName() + "] executed successfully in [" + timeExecute
-						+ "] ms and total time [" + timeTotal + "] ms");
+						/ 1000 + "] sec and total time [" + timeTotal / 1000 + "] sec");
 			}
 		} else {
 			if (log.isInfoEnabled()) {
 				log.info("Driver [" + this.getClass().getCanonicalName() + "] failed in total time [" + timeTotal
-						+ "] ms");
+						/ 1000 + "] sec");
 			}
 		}
 

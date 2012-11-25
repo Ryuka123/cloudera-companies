@@ -6,7 +6,7 @@ import org.junit.Before;
 
 public class CompaniesLocalClusterTest extends ClusterMapReduceTestCase implements CompaniesBaseTest {
 
-	private static final String WORKING_DIR_RUNTIME = WORKING_DIR + "/target/test-runtime/";
+	private static final String WORKING_DIR_RUNTIME = PATH_LOCAL_WORKING_DIR + "/target/test-runtime/";
 
 	public CompaniesLocalClusterTest() {
 		super();

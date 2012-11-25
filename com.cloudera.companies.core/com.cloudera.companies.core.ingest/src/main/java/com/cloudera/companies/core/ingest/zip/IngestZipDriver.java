@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
@@ -49,15 +50,23 @@ public class IngestZipDriver extends CompaniesDriver {
 
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
 
+	public IngestZipDriver() {
+		super();
+	}
+
+	public IngestZipDriver(Configuration conf) {
+		super(conf);
+	}
+
 	@Override
 	public int prepare(String[] args) {
 
 		isComplete.set(false);
-		
+
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
-						+ " [generic options] <local-input-dir> <hdfs-output-dir>");
+						+ " [generic options] <local-input-dir-zip> <hdfs-output-dir-zip>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
 				ToolRunner.printGenericCommandUsage(printStream);

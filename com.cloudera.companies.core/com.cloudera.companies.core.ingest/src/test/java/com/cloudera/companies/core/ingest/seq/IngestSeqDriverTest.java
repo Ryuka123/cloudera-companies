@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
+import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 import com.cloudera.companies.core.test.CompaniesEmbeddedTestCase;
 
 public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
@@ -28,21 +29,19 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		ingestZipDriver = new IngestZipDriver();
-		ingestZipDriver.setConf(getFileSystem().getConf());
-		ingestSeqDriver = new IngestSeqDriver();
-		ingestSeqDriver.setConf(getFileSystem().getConf());
+		ingestZipDriver = new IngestZipDriver(getFileSystem().getConf());
+		ingestSeqDriver = new IngestSeqDriver(getFileSystem().getConf());
 	}
 
 	@Test
 	public void testLaunchInvalid() throws Exception {
 
-		String inputDir = getPathHDFS("/test-input");
-		String inputFile = getPathHDFS("/test-input/input.txt");
-		String inputNonExistantDir = getPathHDFS("/test-input-does-not-exist");
+		String inputDir = CompaniesBaseTestCase.getPathHDFS("/test-input");
+		String inputFile = CompaniesBaseTestCase.getPathHDFS("/test-input/input.txt");
+		String inputNonExistantDir = CompaniesBaseTestCase.getPathHDFS("/test-input-does-not-exist");
 
-		String outputDir = getPathHDFS("/test-output");
-		String outputFile = getPathHDFS("/test-output/output.txt");
+		String outputDir = CompaniesBaseTestCase.getPathHDFS("/test-output");
+		String outputFile = CompaniesBaseTestCase.getPathHDFS("/test-output/output.txt");
 
 		new File(inputDir).mkdirs();
 		new File(inputFile).createNewFile();
@@ -54,13 +53,15 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestSeqDriver.run(new String[0]));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestSeqDriver.run(new String[] {}));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
-					ingestSeqDriver.run(new String[] { getPathLocal("") }));
+					ingestSeqDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal("") }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
 					ingestSeqDriver.run(new String[] { inputDir }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
-					ingestSeqDriver.run(new String[] { getPathLocal(inputFile), outputDir }));
-			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
-					ingestSeqDriver.run(new String[] { getPathLocal(inputNonExistantDir), outputDir }));
+					ingestSeqDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal(inputFile), outputDir }));
+			Assert.assertEquals(
+					CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
+					ingestSeqDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal(inputNonExistantDir),
+							outputDir }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
 					ingestSeqDriver.run(new String[] { inputDir, outputFile }));
 
@@ -145,16 +146,10 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 
 	@Test
 	public void test() throws Exception {
-
-		String inputDirZip = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
-		String outputDirZip = getPathHDFS("/test-output/zip");
-		String outputDirSeq = getPathHDFS("/test-output/seq");
-
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
-				ingestZipDriver.run(new String[] { inputDirZip, outputDirZip }));
-
+				ingestZipDriver.run(new String[] { PATH_LOCAL_INPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_ZIP }));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
-				ingestSeqDriver.run(new String[] { outputDirZip, outputDirSeq }));
+				ingestSeqDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
 	}
 
 }

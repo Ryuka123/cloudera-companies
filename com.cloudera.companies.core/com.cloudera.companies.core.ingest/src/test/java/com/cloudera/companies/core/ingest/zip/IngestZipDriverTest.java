@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
+import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 import com.cloudera.companies.core.test.CompaniesEmbeddedTestCase;
 
 public class IngestZipDriverTest extends CompaniesEmbeddedTestCase {
@@ -27,19 +28,18 @@ public class IngestZipDriverTest extends CompaniesEmbeddedTestCase {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		ingestZipDriver = new IngestZipDriver();
-		ingestZipDriver.setConf(getFileSystem().getConf());
+		ingestZipDriver = new IngestZipDriver(getFileSystem().getConf());
 	}
 
 	@Test
 	public void testLaunchInvalid() throws Exception {
 
-		String inputDir = getPathLocal("/target/test-data");
-		String inputFile = getPathLocal("/target/test-data/input.txt");
-		String inputNonExistantDir = getPathLocal("/target/test-data-does-not-exist");
+		String inputDir = CompaniesBaseTestCase.getPathLocal("/target/test-data");
+		String inputFile = CompaniesBaseTestCase.getPathLocal("/target/test-data/input.txt");
+		String inputNonExistantDir = CompaniesBaseTestCase.getPathLocal("/target/test-data-does-not-exist");
 
-		String outputDir = getPathHDFS("/test-output");
-		String outputFile = getPathHDFS("/test-output/output.txt");
+		String outputDir = CompaniesBaseTestCase.getPathHDFS("/test-output");
+		String outputFile = CompaniesBaseTestCase.getPathHDFS("/test-output/output.txt");
 
 		new File(inputDir).mkdirs();
 		new File(inputFile).createNewFile();
@@ -51,13 +51,15 @@ public class IngestZipDriverTest extends CompaniesEmbeddedTestCase {
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestZipDriver.run(new String[0]));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS, ingestZipDriver.run(new String[] {}));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
-					ingestZipDriver.run(new String[] { getPathLocal("") }));
+					ingestZipDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal("") }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_MISSING_ARGS,
 					ingestZipDriver.run(new String[] { inputDir }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
-					ingestZipDriver.run(new String[] { getPathLocal(inputFile), outputDir }));
-			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
-					ingestZipDriver.run(new String[] { getPathLocal(inputNonExistantDir), outputDir }));
+					ingestZipDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal(inputFile), outputDir }));
+			Assert.assertEquals(
+					CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
+					ingestZipDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal(inputNonExistantDir),
+							outputDir }));
 			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
 					ingestZipDriver.run(new String[] { inputDir, outputFile }));
 
@@ -143,12 +145,10 @@ public class IngestZipDriverTest extends CompaniesEmbeddedTestCase {
 	@Test
 	public void testSingleThread() throws Exception {
 
-		String inputDir = getPathLocal("/target/test-data/data/basiccompany/sample/zip");
-		String outputDir = getPathHDFS("/test-output");
-
-		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS, ingestZipDriver.run(new String[] { inputDir, outputDir }));
-		Assert.assertEquals(1, getFileSystem().listStatus(new Path(outputDir)).length);
-		for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(outputDir))) {
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
+				ingestZipDriver.run(new String[] { PATH_LOCAL_INPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_ZIP }));
+		Assert.assertEquals(1, getFileSystem().listStatus(new Path(PATH_HDFS_OUTPUT_DIR_ZIP)).length);
+		for (FileStatus yearFileStatus : getFileSystem().listStatus(new Path(PATH_HDFS_OUTPUT_DIR_ZIP))) {
 			Assert.assertEquals(2, getFileSystem().listStatus(yearFileStatus.getPath()).length);
 			for (FileStatus monthFileStatus : getFileSystem().listStatus(yearFileStatus.getPath())) {
 				Assert.assertEquals(5, getFileSystem().listStatus(monthFileStatus.getPath()).length);

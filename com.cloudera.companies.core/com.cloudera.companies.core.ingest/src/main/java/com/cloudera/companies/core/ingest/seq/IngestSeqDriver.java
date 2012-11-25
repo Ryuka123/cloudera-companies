@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
@@ -51,6 +52,14 @@ public class IngestSeqDriver extends CompaniesDriver {
 	private String hdfsInputDirPath;
 	private String hdfsOutputDirPath;
 
+	public IngestSeqDriver() {
+		super();
+	}
+
+	public IngestSeqDriver(Configuration conf) {
+		super(conf);
+	}
+
 	@Override
 	public int prepare(String[] args) {
 
@@ -59,7 +68,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
 				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
-						+ " [generic options] <hdfs-input-dir> <hdfs-output-dir>");
+						+ " [generic options] <hdfs-input-dir-zip> <hdfs-output-dir-seq>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
 				ToolRunner.printGenericCommandUsage(printStream);

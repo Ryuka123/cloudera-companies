@@ -32,6 +32,8 @@
 		<opencsv.version>2.3</opencsv.version>
 		<slf4j.version>1.6.4</slf4j.version>
 		<log4j.version>1.2.16</log4j.version>
+		<commons-io.version>1.3.2</commons-io.version>
+		<commons-exec.version>1.1</commons-exec.version>
 		<junit.version>4.9</junit.version>
 		<mrunit.version>0.9.0-incubating</mrunit.version>
 
@@ -45,48 +47,45 @@
 
 	<profiles>
 		<profile>
-			<id>REL</id>
-			<properties>
-				<target.environment>RELEASE</target.environment>
-			</properties>
-		</profile>
-		<profile>
 			<id>DEV</id>
 			<properties>
 				<target.environment>DEVELOPMENT</target.environment>
 			</properties>
 		</profile>
 		<profile>
-			<id>PKG</id>
+			<id>REL</id>
 			<properties>
 				<target.environment>RELEASE</target.environment>
-				<maven.test.skip>true</maven.test.skip>
-				<maven.system-test.skip>true</maven.system-test.skip>
-				<maven.integration-test.skip>true</maven.integration-test.skip>
-				<maven.data-download.skip>true</maven.data-download.skip>
-				<maven.assembly.skip>false</maven.assembly.skip>
-			</properties>
-		</profile>
-		<profile>
-			<id>PKGD</id>
-			<properties>
-				<target.environment>DEVELOPMENT</target.environment>
-				<maven.test.skip>true</maven.test.skip>
-				<maven.system-test.skip>true</maven.system-test.skip>
-				<maven.integration-test.skip>true</maven.integration-test.skip>
-				<maven.data-download.skip>true</maven.data-download.skip>
-				<maven.assembly.skip>false</maven.assembly.skip>
 			</properties>
 		</profile>
 		<profile>
 			<id>ITR</id>
 			<properties>
-				<target.environment>DEVELOPMENT</target.environment>
 				<maven.test.skip>true</maven.test.skip>
 				<maven.system-test.skip>true</maven.system-test.skip>
 				<maven.integration-test.skip>true</maven.integration-test.skip>
 				<maven.data-download.skip>true</maven.data-download.skip>
 				<maven.assembly.skip>true</maven.assembly.skip>
+			</properties>
+		</profile>
+		<profile>
+			<id>BLD</id>
+			<properties>
+				<maven.test.skip>false</maven.test.skip>
+				<maven.system-test.skip>true</maven.system-test.skip>
+				<maven.integration-test.skip>true</maven.integration-test.skip>
+				<maven.data-download.skip>true</maven.data-download.skip>
+				<maven.assembly.skip>true</maven.assembly.skip>
+			</properties>
+		</profile>
+		<profile>
+			<id>ALL</id>
+			<properties>
+				<maven.test.skip>false</maven.test.skip>
+				<maven.system-test.skip>false</maven.system-test.skip>
+				<maven.integration-test.skip>false</maven.integration-test.skip>
+				<maven.data-download.skip>false</maven.data-download.skip>
+				<maven.assembly.skip>false</maven.assembly.skip>
 			</properties>
 		</profile>
 	</profiles>
@@ -123,6 +122,9 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.9</version>
+					<configuration>
+						<argLine>-Xmx1024m</argLine>
+					</configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
