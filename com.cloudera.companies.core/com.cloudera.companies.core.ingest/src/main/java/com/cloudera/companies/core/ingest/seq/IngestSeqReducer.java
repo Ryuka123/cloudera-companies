@@ -8,7 +8,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import com.cloudera.companies.core.common.CompaniesFileMetaData;
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
-import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.IngestConstants.Counter;
 
 public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text> {
 
@@ -40,8 +40,8 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 					context.write(keyOutput, valueOutput);
 				}
 			} else {
-				context.getCounter(RecordCounter.VALID).increment(-1);
-				context.getCounter(RecordCounter.MALFORMED_DUPLICATE).increment(1);
+				context.getCounter(Counter.RECORDS_VALID).increment(-1);
+				context.getCounter(Counter.RECORDS_MALFORMED_DUPLICATE).increment(1);
 			}
 		}
 	}

@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.CompaniesFileMetaData;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
+import com.cloudera.companies.core.ingest.IngestConstants.Counter;
 
 public class IngestZipDriver extends CompaniesDriver {
 
@@ -248,6 +249,14 @@ public class IngestZipDriver extends CompaniesDriver {
 		}
 
 		isComplete.set(true);
+
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_FOUND, fileCopySuccess.size()
+				+ fileCopySkip.size() + fileCopyFailure.size());
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SUCCESS,
+				fileCopySuccess.size());
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SKIP, fileCopySkip.size());
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_FAILURE,
+				fileCopyFailure.size());
 
 		if (log.isInfoEnabled()) {
 			log.info("File ingest complete, successfully processing [" + fileCopySuccess.size() + "] files, skipping ["

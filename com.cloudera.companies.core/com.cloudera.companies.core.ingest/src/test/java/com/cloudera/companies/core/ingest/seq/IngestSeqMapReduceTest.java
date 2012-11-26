@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
-import com.cloudera.companies.core.ingest.seq.IngestSeqDriver.RecordCounter;
+import com.cloudera.companies.core.ingest.IngestConstants.Counter;
 import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 
 public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
@@ -48,7 +48,7 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 		mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
 		mapDriver.runTest();
-		Assert.assertEquals(1, mapDriver.getCounters().findCounter(RecordCounter.VALID).getValue());
+		Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_VALID).getValue());
 	}
 
 	@Test

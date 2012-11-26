@@ -32,15 +32,12 @@ import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyCompositeCom
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupComparator;
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupPartitioner;
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileZipFileInputFormat;
+import com.cloudera.companies.core.ingest.IngestConstants.Counter;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
 public class IngestSeqDriver extends CompaniesDriver {
 
 	private static Logger log = LoggerFactory.getLogger(IngestSeqDriver.class);
-
-	public static enum RecordCounter {
-		VALID, MALFORMED, MALFORMED_KEY, MALFORMED_DUPLICATE
-	}
 
 	public static final String NAMED_OUTPUT_PARTION_SEQ_FILES = "PartionedSequenceFiles";
 
@@ -156,6 +153,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return RETURN_SUCCESS;
 		}
 
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_FOUND, hdfsInputDirs.size());
+
 		return RETURN_SUCCESS;
 	}
 
@@ -197,6 +196,9 @@ public class IngestSeqDriver extends CompaniesDriver {
 		jobSubmitted.set(true);
 
 		int exitCode = job.waitForCompletion(true) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+
+		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_VALID,
+				Counter.RECORDS_MALFORMED, Counter.RECORDS_MALFORMED_KEY, Counter.RECORDS_MALFORMED_DUPLICATE });
 
 		if (log.isInfoEnabled()) {
 			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));

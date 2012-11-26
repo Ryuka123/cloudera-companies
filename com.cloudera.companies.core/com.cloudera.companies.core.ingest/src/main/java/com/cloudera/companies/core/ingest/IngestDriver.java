@@ -61,15 +61,16 @@ public class IngestDriver extends CompaniesDriverSuccess {
 	public int execute() throws Exception {
 
 		int returnValue = RETURN_FAILURE_RUNTIME;
-		if ((returnValue = new IngestZipDriver(getConf())
-				.run(new String[] { localInputDirPathZip, hdfsOutputDirPathZip })) == RETURN_SUCCESS) {
-			returnValue = new IngestSeqDriver(getConf())
-					.run(new String[] { hdfsOutputDirPathZip, hdfsOutputDirPathSeq });
+		IngestZipDriver ingestZipDriver = new IngestZipDriver(getConf());
+		IngestSeqDriver ingestSeqDriver = new IngestSeqDriver(getConf());
+		if ((returnValue = ingestZipDriver.run(new String[] { localInputDirPathZip, hdfsOutputDirPathZip })) == RETURN_SUCCESS) {
+			returnValue = ingestSeqDriver.run(new String[] { hdfsOutputDirPathZip, hdfsOutputDirPathSeq });
 		}
 		isComplete.set(true);
 
+		importCounters(ingestZipDriver.getCounters());
+		importCounters(ingestSeqDriver.getCounters());
 
-		
 		return returnValue;
 	}
 

@@ -1,0 +1,9 @@
+package com.cloudera.companies.core.ingest;
+
+public class IngestConstants {
+
+	public enum Counter {
+		FILES_FOUND, FILES_PROCCESSED_SUCCESS, FILES_PROCCESSED_SKIP, FILES_PROCCESSED_FAILURE, RECORDS_VALID, RECORDS_MALFORMED, RECORDS_MALFORMED_KEY, RECORDS_MALFORMED_DUPLICATE
+	};
+
+}
