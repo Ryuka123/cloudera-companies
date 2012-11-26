@@ -18,9 +18,9 @@ public class IngestDriver extends CompaniesDriverSuccess {
 
 	private static Logger log = LoggerFactory.getLogger(IngestDriver.class);
 
-	private String localInputDirPathZip;
-	private String hdfsOutputDirPathZip;
-	private String hdfsOutputDirPathSeq;
+	private String localInputDirZip;
+	private String hdfsOutputDirZip;
+	private String hdfsOutputDirSeq;
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
@@ -50,9 +50,9 @@ public class IngestDriver extends CompaniesDriverSuccess {
 			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		localInputDirPathZip = args[0];
-		hdfsOutputDirPathZip = args[1];
-		hdfsOutputDirPathSeq = args[2];
+		localInputDirZip = args[0];
+		hdfsOutputDirZip = args[1];
+		hdfsOutputDirSeq = args[2];
 
 		return RETURN_SUCCESS;
 	}
@@ -63,8 +63,8 @@ public class IngestDriver extends CompaniesDriverSuccess {
 		int returnValue = RETURN_FAILURE_RUNTIME;
 		IngestZipDriver ingestZipDriver = new IngestZipDriver(getConf());
 		IngestSeqDriver ingestSeqDriver = new IngestSeqDriver(getConf());
-		if ((returnValue = ingestZipDriver.run(new String[] { localInputDirPathZip, hdfsOutputDirPathZip })) == RETURN_SUCCESS) {
-			returnValue = ingestSeqDriver.run(new String[] { hdfsOutputDirPathZip, hdfsOutputDirPathSeq });
+		if ((returnValue = ingestZipDriver.run(new String[] { localInputDirZip, hdfsOutputDirZip })) == RETURN_SUCCESS) {
+			returnValue = ingestSeqDriver.run(new String[] { hdfsOutputDirZip, hdfsOutputDirSeq });
 		}
 		isComplete.set(true);
 

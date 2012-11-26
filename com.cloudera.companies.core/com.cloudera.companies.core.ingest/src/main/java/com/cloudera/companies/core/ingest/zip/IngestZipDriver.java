@@ -44,11 +44,11 @@ public class IngestZipDriver extends CompaniesDriver {
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
-	private File localInputDir;
-	private Path hdfsOutputDir;
+	private File localInputPath;
+	private Path hdfsOutputPath;
 
-	private String localInputDirPath;
-	private String hdfsOutputDirPath;
+	private String localInputDir;
+	private String hdfsOutputDir;
 
 	private Map<Long, FileSystem> fileSystems = new ConcurrentHashMap<Long, FileSystem>();
 
@@ -78,8 +78,8 @@ public class IngestZipDriver extends CompaniesDriver {
 			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		localInputDirPath = args[0];
-		hdfsOutputDirPath = args[1];
+		localInputDir = args[0];
+		hdfsOutputDir = args[1];
 
 		return RETURN_SUCCESS;
 	}
@@ -87,55 +87,55 @@ public class IngestZipDriver extends CompaniesDriver {
 	@Override
 	public int validate() throws IOException {
 
-		localInputDir = new File(localInputDirPath);
-		if (!localInputDir.exists()) {
+		localInputPath = new File(localInputDir);
+		if (!localInputPath.exists()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local input directory [" + localInputDirPath + "] does not exist");
+				log.error("Local input directory [" + localInputDir + "] does not exist");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (!localInputDir.isDirectory()) {
+		if (!localInputPath.isDirectory()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local input directory [" + localInputDirPath + "] is of incorrect type");
+				log.error("Local input directory [" + localInputDir + "] is of incorrect type");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (!localInputDir.canExecute()) {
+		if (!localInputPath.canExecute()) {
 			if (log.isErrorEnabled()) {
-				log.error("Local input directory [" + localInputDirPath
+				log.error("Local input directory [" + localInputDir
 						+ "] has too restrictive permissions to read as user ["
 						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
-			log.info("Local input directory [" + localInputDirPath + "] validated as ["
-					+ localInputDir.getAbsolutePath() + "]");
+			log.info("Local input directory [" + localInputDir + "] validated as [" + localInputPath.getAbsolutePath()
+					+ "]");
 		}
 
-		hdfsOutputDir = new Path(hdfsOutputDirPath);
+		hdfsOutputPath = new Path(hdfsOutputDir);
 		final FileSystem hdfs = getFileSystem();
-		if (hdfs.exists(hdfsOutputDir)) {
-			if (!hdfs.isDirectory(hdfsOutputDir)) {
+		if (hdfs.exists(hdfsOutputPath)) {
+			if (!hdfs.isDirectory(hdfsOutputPath)) {
 				if (log.isErrorEnabled()) {
-					log.error("HDFS output directory [" + hdfsOutputDirPath + "] is of incorrect type");
+					log.error("HDFS output directory [" + hdfsOutputDir + "] is of incorrect type");
 				}
 				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 			}
 			if (!HDFSClientUtil.canDoAction(hdfs, UserGroupInformation.getCurrentUser().getUserName(),
-					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir, FsAction.ALL)) {
+					UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputPath, FsAction.ALL)) {
 				if (log.isErrorEnabled()) {
-					log.error("HDFS output directory [" + hdfsOutputDirPath
+					log.error("HDFS output directory [" + hdfsOutputDir
 							+ "] has too restrictive permissions to read/write as user ["
 							+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 				}
 				return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 			}
 		} else {
-			hdfs.mkdirs(hdfsOutputDir, new FsPermission(FsAction.ALL, FsAction.READ_EXECUTE, FsAction.READ_EXECUTE));
+			hdfs.mkdirs(hdfsOutputPath, new FsPermission(FsAction.ALL, FsAction.READ_EXECUTE, FsAction.READ_EXECUTE));
 		}
 		if (log.isInfoEnabled()) {
-			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
+			log.info("HDFS output directory [" + hdfsOutputDir + "] validated as [" + hdfsOutputPath + "]");
 		}
 
 		return RETURN_SUCCESS;
@@ -145,13 +145,13 @@ public class IngestZipDriver extends CompaniesDriver {
 	public int execute() throws Exception {
 
 		final Map<String, Set<FileCopy>> fileCopyByGroup = new ConcurrentHashMap<String, Set<FileCopy>>();
-		for (File localInputFile : FileUtils.listFiles(localInputDir, new String[] { "zip" }, true)) {
+		for (File localInputFile : FileUtils.listFiles(localInputPath, new String[] { "zip" }, true)) {
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
 					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parsePathZip(
 							localInputFile.getName(), localInputFile.getParent());
 					FileCopy fileCopy = new FileCopy(new Path(companiesFileMetaData.getName()), new Path(
-							companiesFileMetaData.getDirectory()), new Path(hdfsOutputDir,
+							companiesFileMetaData.getDirectory()), new Path(hdfsOutputPath,
 							companiesFileMetaData.getGroup()), companiesFileMetaData.getGroup(),
 							new FileCopyCallback() {
 								@Override

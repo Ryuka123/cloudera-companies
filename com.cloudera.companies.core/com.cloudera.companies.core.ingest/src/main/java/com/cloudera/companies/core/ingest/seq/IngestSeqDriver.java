@@ -44,12 +44,14 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
 
-	private Path hdfsOutputDir;
+	private Path hdfsOutputPath;
 	private Set<Path> hdfsInputDirs;
 
-	private String hdfsInputDirPath;
-	private String hdfsOutputDirPath;
+	private String hdfsInputDir;
+	private String hdfsOutputDir;
 
+	private FileSystem hdfsFileSystem;
+	
 	public IngestSeqDriver() {
 		super();
 	}
@@ -76,8 +78,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
 		}
 
-		hdfsInputDirPath = args[0];
-		hdfsOutputDirPath = args[1];
+		hdfsInputDir = args[0];
+		hdfsOutputDir = args[1];
 
 		return RETURN_SUCCESS;
 	}
@@ -85,63 +87,63 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int validate() throws IOException {
 
-		FileSystem hdfsFileSystem = FileSystem.get(getConf());
+		 hdfsFileSystem = FileSystem.get(getConf());
 
-		Path hdfsInputDir = new Path(hdfsInputDirPath);
-		if (!hdfsFileSystem.exists(hdfsInputDir)) {
+		Path hdfsInputPath = new Path(hdfsInputDir);
+		if (!hdfsFileSystem.exists(hdfsInputPath)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS input directory [" + hdfsInputDirPath + "] does not exist");
+				log.error("HDFS input directory [" + hdfsInputDir + "] does not exist");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (!hdfsFileSystem.isDirectory(hdfsInputDir)) {
+		if (!hdfsFileSystem.isDirectory(hdfsInputPath)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS input directory [" + hdfsInputDirPath + "] is of incorrect type");
+				log.error("HDFS input directory [" + hdfsInputDir + "] is of incorrect type");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!HDFSClientUtil.canDoAction(hdfsFileSystem, UserGroupInformation.getCurrentUser().getUserName(),
-				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsInputDir, FsAction.READ_EXECUTE)) {
+				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsInputPath, FsAction.READ_EXECUTE)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS input directory [" + hdfsInputDirPath
+				log.error("HDFS input directory [" + hdfsInputDir
 						+ "] has too restrictive permissions to read as user ["
 						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
-			log.info("HDFS output directory [" + hdfsInputDirPath + "] validated as [" + hdfsInputDir + "]");
+			log.info("HDFS output directory [" + hdfsInputDir + "] validated as [" + hdfsInputPath + "]");
 		}
 
-		hdfsOutputDir = new Path(hdfsOutputDirPath);
-		if (hdfsFileSystem.exists(hdfsOutputDir)) {
+		hdfsOutputPath = new Path(hdfsOutputDir);
+		if (hdfsFileSystem.exists(hdfsOutputPath)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS output directory [" + hdfsOutputDirPath + "] already exists");
+				log.error("HDFS output directory [" + hdfsOutputDir + "] already exists");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (!HDFSClientUtil.canDoAction(hdfsFileSystem, UserGroupInformation.getCurrentUser().getUserName(),
-				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputDir.getParent(), FsAction.ALL)) {
+				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputPath.getParent(), FsAction.ALL)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS parent of output directory [" + hdfsOutputDirPath
+				log.error("HDFS parent of output directory [" + hdfsOutputDir
 						+ "] has too restrictive permissions to write as user ["
 						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
-			log.info("HDFS output directory [" + hdfsOutputDirPath + "] validated as [" + hdfsOutputDir + "]");
+			log.info("HDFS output directory [" + hdfsOutputDir + "] validated as [" + hdfsOutputPath + "]");
 		}
 
 		hdfsInputDirs = new HashSet<Path>();
-		RemoteIterator<LocatedFileStatus> inputFiles = hdfsFileSystem.listFiles(hdfsInputDir, true);
+		RemoteIterator<LocatedFileStatus> inputFiles = hdfsFileSystem.listFiles(hdfsInputPath, true);
 		while (inputFiles.hasNext()) {
 			LocatedFileStatus fileStatus = inputFiles.next();
 			if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)) {
 				String fileSuccessParent = fileStatus.getPath().getParent().toString();
-				String fileSuccessParentSuffix = fileSuccessParent.substring(fileSuccessParent.indexOf(hdfsInputDir
-						.toString()) + hdfsInputDir.toString().length());
-				if (!hdfsFileSystem.exists(new Path(hdfsOutputDir.toString() + fileSuccessParentSuffix,
+				String fileSuccessParentSuffix = fileSuccessParent.substring(fileSuccessParent.indexOf(hdfsInputPath
+						.toString()) + hdfsInputPath.toString().length());
+				if (!hdfsFileSystem.exists(new Path(hdfsOutputPath.toString() + fileSuccessParentSuffix,
 						CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME))) {
 					hdfsInputDirs.add(fileStatus.getPath().getParent());
 				}
@@ -183,7 +185,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
 
 		FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
-		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
+		FileOutputFormat.setOutputPath(job, hdfsOutputPath);
 
 		MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, SequenceFileOutputFormat.class, Text.class,
 				Text.class);
@@ -213,7 +215,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int cleanup() throws IOException {
 
-		FileSystem.get(getConf()).close();
+		hdfsFileSystem.close();
 
 		return RETURN_SUCCESS;
 	}
