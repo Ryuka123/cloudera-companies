@@ -79,6 +79,16 @@
 			</properties>
 		</profile>
 		<profile>
+			<id>PKG</id>
+			<properties>
+				<maven.test.skip>true</maven.test.skip>
+				<maven.system-test.skip>true</maven.system-test.skip>
+				<maven.integration-test.skip>true</maven.integration-test.skip>
+				<maven.data-download.skip>true</maven.data-download.skip>
+				<maven.assembly.skip>false</maven.assembly.skip>
+			</properties>
+		</profile>
+		<profile>
 			<id>ALL</id>
 			<properties>
 				<maven.test.skip>false</maven.test.skip>
