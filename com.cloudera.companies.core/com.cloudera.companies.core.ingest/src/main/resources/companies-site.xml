@@ -2,6 +2,14 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
 	<property>
+		<name>companies.ingest.timeout.secs</name>
+		<value>1200</value>
+	</property>
+	<property>
+		<name>companies.ingest.thread.number</name>
+		<value>1</value>
+	</property>
+	<property>
 		<name>mapreduce.fileoutputcommitter.marksuccessfuljobs</name>
 		<value>${filter.compression}</value>
 	</property>

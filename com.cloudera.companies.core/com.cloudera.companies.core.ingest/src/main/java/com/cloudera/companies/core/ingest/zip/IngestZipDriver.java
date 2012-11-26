@@ -19,6 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -144,7 +145,8 @@ public class IngestZipDriver extends CompaniesDriver {
 	public int execute() throws Exception {
 
 		final Map<String, Set<FileCopy>> fileCopyByGroup = new ConcurrentHashMap<String, Set<FileCopy>>();
-		for (File localInputFile : localInputDir.listFiles()) {
+		for (Object localInputObject : FileUtils.listFiles(localInputDir, new String[] { "zip" }, true)) {
+			File localInputFile = (File) localInputObject;
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
 					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parsePathZip(

@@ -26,6 +26,11 @@
 			<type>pom</type>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>${commons-io.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.cloudera.companies.repo.bom.cdh.api</groupId>
 			<artifactId>com.cloudera.companies.repo.bom.cdh.api.core</artifactId>
 			<version>${project.version}</version>
