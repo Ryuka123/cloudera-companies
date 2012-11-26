@@ -153,7 +153,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return RETURN_SUCCESS;
 		}
 
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_FOUND, hdfsInputDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_COUNT, hdfsInputDirs.size());
 
 		return RETURN_SUCCESS;
 	}
@@ -197,8 +197,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		int exitCode = job.waitForCompletion(true) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
 
-		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_VALID,
-				Counter.RECORDS_MALFORMED, Counter.RECORDS_MALFORMED_KEY, Counter.RECORDS_MALFORMED_DUPLICATE });
+		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_PROCESSED_VALID,
+				Counter.RECORDS_PROCESSED_MALFORMED, Counter.RECORDS_PROCESSED_MALFORMED_KEY, Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
 
 		if (log.isInfoEnabled()) {
 			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));

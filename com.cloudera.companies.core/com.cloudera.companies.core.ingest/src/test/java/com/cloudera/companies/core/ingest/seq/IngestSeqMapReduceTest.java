@@ -48,7 +48,7 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 		mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
 		mapDriver.runTest();
-		Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_VALID).getValue());
+		Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_PROCESSED_VALID).getValue());
 	}
 
 	@Test

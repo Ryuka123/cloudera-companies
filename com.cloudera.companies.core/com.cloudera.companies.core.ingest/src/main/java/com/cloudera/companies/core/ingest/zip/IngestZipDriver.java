@@ -145,8 +145,7 @@ public class IngestZipDriver extends CompaniesDriver {
 	public int execute() throws Exception {
 
 		final Map<String, Set<FileCopy>> fileCopyByGroup = new ConcurrentHashMap<String, Set<FileCopy>>();
-		for (Object localInputObject : FileUtils.listFiles(localInputDir, new String[] { "zip" }, true)) {
-			File localInputFile = (File) localInputObject;
+		for (File localInputFile : FileUtils.listFiles(localInputDir, new String[] { "zip" }, true)) {
 			if (localInputFile.isFile() && localInputFile.canRead()) {
 				try {
 					CompaniesFileMetaData companiesFileMetaData = CompaniesFileMetaData.parsePathZip(
@@ -252,7 +251,7 @@ public class IngestZipDriver extends CompaniesDriver {
 
 		isComplete.set(true);
 
-		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_FOUND, fileCopySuccess.size()
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_COUNT, fileCopySuccess.size()
 				+ fileCopySkip.size() + fileCopyFailure.size());
 		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SUCCESS,
 				fileCopySuccess.size());

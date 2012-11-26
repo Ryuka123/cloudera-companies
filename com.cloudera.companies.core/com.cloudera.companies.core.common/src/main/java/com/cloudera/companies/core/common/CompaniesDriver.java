@@ -2,14 +2,11 @@ package com.cloudera.companies.core.common;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -38,7 +35,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	private volatile int exitValue = RETURN_FAILURE_RUNTIME;
 
-	private Map<String, Map<Enum<?>, Long>> counters = new ConcurrentHashMap<String, Map<Enum<?>, Long>>();
+	private Map<String, Map<Enum<?>, Long>> counters = new LinkedHashMap<String, Map<Enum<?>, Long>>();
 
 	public CompaniesDriver() {
 		super();
@@ -59,11 +56,11 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 	public abstract int shutdown() throws Exception;
 
 	public Map<String, Map<Enum<?>, Long>> getCounters() {
-		return new HashMap<String, Map<Enum<?>, Long>>(counters);
+		return new LinkedHashMap<String, Map<Enum<?>, Long>>(counters);
 	}
 
 	public Map<Enum<?>, Long> getCounters(String group) {
-		return counters.get(group) == null ? Collections.<Enum<?>, Long> emptyMap() : new HashMap<Enum<?>, Long>(
+		return counters.get(group) == null ? Collections.<Enum<?>, Long> emptyMap() : new LinkedHashMap<Enum<?>, Long>(
 				counters.get(group));
 	}
 
@@ -79,7 +76,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	protected void importCounters(String group, Map<Enum<?>, Long> counters) {
 		if (this.counters.get(group) == null) {
-			this.counters.put(group, new HashMap<Enum<?>, Long>());
+			this.counters.put(group, new LinkedHashMap<Enum<?>, Long>());
 		}
 		for (Enum<?> value : counters.keySet()) {
 			if (counters.get(value) != null) {
@@ -93,7 +90,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	protected void importCounters(String group, Job job, Enum<?>[] values) throws IOException, InterruptedException {
 		if (this.counters.get(group) == null) {
-			this.counters.put(group, new HashMap<Enum<?>, Long>());
+			this.counters.put(group, new LinkedHashMap<Enum<?>, Long>());
 		}
 		Counters counters = job.getCounters();
 		for (Enum<?> value : values) {
@@ -113,7 +110,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	public Long incramentCounter(String group, Enum<?> counter, int incrament) {
 		if (this.counters.get(group) == null) {
-			this.counters.put(group, new HashMap<Enum<?>, Long>());
+			this.counters.put(group, new LinkedHashMap<Enum<?>, Long>());
 		}
 		return counters.get(group).put(counter,
 				(counters.get(group).get(counter) == null ? 0 : counters.get(group).get(counter)) + incrament);
@@ -180,15 +177,11 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 		if (log.isInfoEnabled()) {
 			log.info("Driver [" + this.getClass().getCanonicalName() + "] counters:");
 
-			SortedMap<String, Long> counteresSortedByName = new TreeMap<String, Long>();
 			for (String group : getCountersGroups()) {
 				Map<Enum<?>, Long> counters = getCounters(group);
 				for (Enum<?> counter : counters.keySet()) {
-					counteresSortedByName.put(group + "." + counter.toString(), counters.get(counter));
+					log.info("\t" + group + "." + counter.toString() + "=" + counters.get(counter));
 				}
-			}
-			for (String counter : counteresSortedByName.keySet()) {
-				log.info("\t" + counter + "=" + counteresSortedByName.get(counter));
 			}
 		}
 

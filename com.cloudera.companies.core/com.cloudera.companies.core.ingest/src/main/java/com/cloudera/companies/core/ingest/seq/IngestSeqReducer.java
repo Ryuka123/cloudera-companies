@@ -40,8 +40,8 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 					context.write(keyOutput, valueOutput);
 				}
 			} else {
-				context.getCounter(Counter.RECORDS_VALID).increment(-1);
-				context.getCounter(Counter.RECORDS_MALFORMED_DUPLICATE).increment(1);
+				context.getCounter(Counter.RECORDS_PROCESSED_VALID).increment(-1);
+				context.getCounter(Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE).increment(1);
 			}
 		}
 	}
