@@ -2,6 +2,7 @@ package com.cloudera.companies.core.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -61,18 +62,45 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 		}
 		Assert.assertTrue(thrown);
 
-		File testDataDir = new File("./target/test-data/data/basiccompany/sample/zip");
-		for (File testDataFile : testDataDir.listFiles()) {
-			CompaniesFileMetaData companiesFile = CompaniesFileMetaData.parsePathZip(testDataFile.getName(),
-					testDataFile.getParent());
-			Assert.assertNotNull(companiesFile);
-			Assert.assertEquals(testDataFile.getName(), companiesFile.getName());
-			Assert.assertEquals(testDataFile.getParent(), companiesFile.getDirectory());
-			Assert.assertNotNull(companiesFile.getGroup());
-			Assert.assertNotNull(companiesFile.getSnapshotDate());
-			Assert.assertTrue(companiesFile.getPart() < 5 && companiesFile.getPart() > 0);
-			Assert.assertEquals(4, companiesFile.getPartTotal());
-		}
+		File fileZip = new File("./target/BasicCompanyData-2012-05-01-part1_4.zip");
+		Assert.assertEquals("BasicCompanyData-2012-05-01-part1_4.zip",
+				CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getName());
+		Assert.assertEquals("./target", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
+				.getDirectory());
+		Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
+				.getGroup());
+		Assert.assertEquals(new Date(1335826800000L),
+				CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getSnapshotDate());
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getPart());
+		Assert.assertEquals(4, CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
+				.getPartTotal());
+
+		File fileCSV = new File("./target/BasicCompanyData-2012-05-01-part1_4.csv");
+		Assert.assertEquals("BasicCompanyData-2012-05-01-part1_4.csv",
+				CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getName());
+		Assert.assertEquals("./target", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
+				.getDirectory());
+		Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
+				.getGroup());
+		Assert.assertEquals(new Date(1335826800000L),
+				CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getSnapshotDate());
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getPart());
+		Assert.assertEquals(4, CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
+				.getPartTotal());
+
+		File fileReduce = new File("./target/MAY-2012-r-00000");
+		Assert.assertEquals("MAY-2012-r-00000",
+				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getName());
+		Assert.assertEquals("./target",
+				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getDirectory());
+		Assert.assertEquals("2012/05",
+				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getGroup());
+		Assert.assertEquals(new Date(1335826800000L),
+				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
+				.getPart());
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
+				.getPartTotal());
 
 	}
 
@@ -127,7 +155,7 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 		boolean thrown = false;
 		try {
-			Assert.assertNull(CompaniesFileMetaData.parseGroup(null));
+			Assert.assertNull(CompaniesFileMetaData.parseGroupFile(null));
 		} catch (IllegalArgumentException e) {
 			thrown = true;
 		}
@@ -135,7 +163,7 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 		thrown = false;
 		try {
-			Assert.assertEquals("", CompaniesFileMetaData.parseGroup(""));
+			Assert.assertEquals("", CompaniesFileMetaData.parseGroupFile(""));
 		} catch (IOException e) {
 			thrown = true;
 		}
@@ -143,13 +171,13 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 		thrown = false;
 		try {
-			Assert.assertEquals("", CompaniesFileMetaData.parseGroup("AA"));
+			Assert.assertEquals("", CompaniesFileMetaData.parseGroupFile("AA"));
 		} catch (IOException e) {
 			thrown = true;
 		}
 		Assert.assertTrue(thrown);
 
-		Assert.assertEquals("2012/06/JUN-2012", CompaniesFileMetaData.parseGroup("2012/06"));
+		Assert.assertEquals("2012/06/JUN-2012", CompaniesFileMetaData.parseGroupFile("2012/06"));
 
 	}
 }

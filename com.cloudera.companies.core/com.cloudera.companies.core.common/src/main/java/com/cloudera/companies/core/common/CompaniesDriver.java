@@ -23,9 +23,10 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 	private static Logger log = LoggerFactory.getLogger(CompaniesDriver.class);
 
 	public static final int RETURN_SUCCESS = 0;
-	public static final int RETURN_FAILURE_MISSING_ARGS = 1;
-	public static final int RETURN_FAILURE_INVALID_ARGS = 2;
-	public static final int RETURN_FAILURE_RUNTIME = 3;
+	public static final int RETURN_WARNING_DIRTY_INGEST = 100;
+	public static final int RETURN_FAILURE_MISSING_ARGS = 200;
+	public static final int RETURN_FAILURE_INVALID_ARGS = 201;
+	public static final int RETURN_FAILURE_RUNTIME = 202;
 
 	public static final String CONF_SETTINGS = "companies-site.xml";
 

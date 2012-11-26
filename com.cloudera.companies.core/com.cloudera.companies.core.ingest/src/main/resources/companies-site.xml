@@ -2,6 +2,10 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
 	<property>
+		<name>companies.ingest.fsck.clean</name>
+		<value>false</value>
+	</property>
+	<property>
 		<name>companies.ingest.timeout.secs</name>
 		<value>1200</value>
 	</property>
@@ -11,11 +15,11 @@
 	</property>
 	<property>
 		<name>mapreduce.fileoutputcommitter.marksuccessfuljobs</name>
-		<value>${filter.compression}</value>
+		<value>true</value>
 	</property>
 	<property>
 		<name>mapred.compress.map.output</name>
-		<value>false</value>
+		<value>${filter.compression}</value>
 	</property>
 	<property>
 		<name>mapreduce.map.output.compress.codec</name>

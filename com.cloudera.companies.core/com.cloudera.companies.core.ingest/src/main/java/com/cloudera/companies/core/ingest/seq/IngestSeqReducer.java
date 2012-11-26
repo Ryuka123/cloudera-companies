@@ -35,7 +35,7 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 				Text valueOutput = new Text(value);
 				try {
 					multipleOutputs.write(IngestSeqDriver.NAMED_OUTPUT_PARTION_SEQ_FILES, keyOutput, valueOutput,
-							CompaniesFileMetaData.parseGroup(key.getGroup()));
+							CompaniesFileMetaData.parseGroupFile(key.getGroup()));
 				} catch (IllegalArgumentException exception) {
 					context.write(keyOutput, valueOutput);
 				}

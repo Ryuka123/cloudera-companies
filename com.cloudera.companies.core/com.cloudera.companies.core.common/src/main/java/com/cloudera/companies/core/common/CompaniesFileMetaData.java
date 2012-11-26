@@ -13,13 +13,15 @@ public class CompaniesFileMetaData {
 
 	public static final int FILE_FIELDS_NUMBER = 53;
 
+	private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
+	private static final String DATE_FORMAT_FILE_NAME_REDUCE = "MMM-yyyy";
+	private static final String DATE_FORMAT_GROUP = "yyyy/MM";
+	private static final String DATE_FORMAT_GROUP_FILE = DATE_FORMAT_GROUP + "/" + DATE_FORMAT_FILE_NAME_REDUCE;
+
 	private static final String FILE_NAME_REGEX_BASE = "BasicCompanyData-(20[0-9][0-9]-[0-1][0-9]-[0-3][0-9])-part([1-9])_([1-9])";
 	private static final Pattern FILE_NAME_PATTERN_ZIP = Pattern.compile(FILE_NAME_REGEX_BASE + ".zip");
 	private static final Pattern FILE_NAME_PATTERN_CSV = Pattern.compile(FILE_NAME_REGEX_BASE + ".csv");
-
-	private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
-	private static final String DATE_FORMAT_GROUP = "yyyy/MM";
-	private static final String DATE_FORMAT_GROUP_FILE = "yyyy/MM/MMM-yyyy";
+	private static final Pattern FILE_NAME_PATTERN_REDUCE = Pattern.compile("([A-Z]{3}-20[0-9][0-9])-r-[0-9]{5}");
 
 	private static final CSVParser FILE_RECORD_PARSER = new CSVParser(',', '"', '\\', true, true);
 
@@ -31,14 +33,19 @@ public class CompaniesFileMetaData {
 	private Date snapshotDate;
 
 	public static CompaniesFileMetaData parsePathZip(String name, String directory) throws IOException {
-		return parsePath(FILE_NAME_PATTERN_ZIP, name, directory);
+		return parsePath(FILE_NAME_PATTERN_ZIP, DATE_FORMAT_FILE_NAME, name, directory);
 	}
 
 	public static CompaniesFileMetaData parsePathCSV(String name, String directory) throws IOException {
-		return parsePath(FILE_NAME_PATTERN_CSV, name, directory);
+		return parsePath(FILE_NAME_PATTERN_CSV, DATE_FORMAT_FILE_NAME, name, directory);
 	}
 
-	private static CompaniesFileMetaData parsePath(Pattern pattern, String name, String directory) throws IOException {
+	public static CompaniesFileMetaData parsePathReduce(String name, String directory) throws IOException {
+		return parsePath(FILE_NAME_PATTERN_REDUCE, DATE_FORMAT_FILE_NAME_REDUCE, name, directory);
+	}
+
+	private static CompaniesFileMetaData parsePath(Pattern patternPath, String formatDate, String name, String directory)
+			throws IOException {
 
 		if (name == null) {
 			throw new IllegalArgumentException("null name");
@@ -46,24 +53,30 @@ public class CompaniesFileMetaData {
 		if (directory == null) {
 			throw new IllegalArgumentException("null directory");
 		}
-		Matcher fileNameMatcher = pattern.matcher(name);
-		if (fileNameMatcher.matches() && fileNameMatcher.groupCount() == 3) {
+		Matcher fileNameMatcher = patternPath.matcher(name);
+		if (fileNameMatcher.matches()) {
 			try {
-				return new CompaniesFileMetaData(name, directory,
-						new SimpleDateFormat(DATE_FORMAT_GROUP).format(new SimpleDateFormat(DATE_FORMAT_FILE_NAME)
-								.parse(fileNameMatcher.group(1))), Integer.parseInt(fileNameMatcher.group(2)),
-						Integer.parseInt(fileNameMatcher.group(3)),
-						new SimpleDateFormat(DATE_FORMAT_FILE_NAME).parse(fileNameMatcher.group(1)));
+				if (fileNameMatcher.groupCount() == 3) {
+					return new CompaniesFileMetaData(name, directory,
+							new SimpleDateFormat(DATE_FORMAT_GROUP).format(new SimpleDateFormat(formatDate)
+									.parse(fileNameMatcher.group(1))), Integer.parseInt(fileNameMatcher.group(2)),
+							Integer.parseInt(fileNameMatcher.group(3)),
+							new SimpleDateFormat(formatDate).parse(fileNameMatcher.group(1)));
+				} else if (fileNameMatcher.groupCount() == 1) {
+					return new CompaniesFileMetaData(name, directory,
+							new SimpleDateFormat(DATE_FORMAT_GROUP).format(new SimpleDateFormat(formatDate)
+									.parse(fileNameMatcher.group(1))), 1, 1,
+							new SimpleDateFormat(formatDate).parse(fileNameMatcher.group(1)));
+				}
+
 			} catch (Exception e) {
 				throw new IOException("File name [" + name + "] could not be parsed, nested root cause follows", e);
 			}
-		} else {
-			throw new IOException("File name [" + name + "] did not match regex specification ["
-					+ pattern + "]");
 		}
+		throw new IOException("File name [" + name + "] did not match regex specification [" + patternPath + "]");
 	}
 
-	public static String parseGroup(String group) throws IOException {
+	public static Date parseGroupDate(String group) throws IOException {
 		if (group == null) {
 			throw new IllegalArgumentException("null group");
 		}
@@ -73,7 +86,11 @@ public class CompaniesFileMetaData {
 		} catch (ParseException exception) {
 			throw new IOException("Could not parse group", exception);
 		}
-		return new SimpleDateFormat(DATE_FORMAT_GROUP_FILE).format(date).toUpperCase();
+		return date;
+	}
+
+	public static String parseGroupFile(String group) throws IOException {
+		return new SimpleDateFormat(DATE_FORMAT_GROUP_FILE).format(parseGroupDate(group)).toUpperCase();
 	}
 
 	public static String[] parseRecord(String record) throws IOException {

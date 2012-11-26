@@ -17,6 +17,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -179,7 +180,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		job.setReducerClass(IngestSeqReducer.class);
 
 		job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
 
 		FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
 		FileOutputFormat.setOutputPath(job, hdfsOutputDir);
@@ -198,7 +199,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 		int exitCode = job.waitForCompletion(true) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
 
 		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_PROCESSED_VALID,
-				Counter.RECORDS_PROCESSED_MALFORMED, Counter.RECORDS_PROCESSED_MALFORMED_KEY, Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
+				Counter.RECORDS_PROCESSED_MALFORMED, Counter.RECORDS_PROCESSED_MALFORMED_KEY,
+				Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
 
 		if (log.isInfoEnabled()) {
 			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));
