@@ -2,7 +2,6 @@ package com.cloudera.companies.core.common;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -69,8 +68,8 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 				.getDirectory());
 		Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
 				.getGroup());
-		Assert.assertEquals(new Date(1335826800000L),
-				CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getSnapshotDate());
+		Assert.assertEquals(1335826800000L, CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
+				.getSnapshotDate().getTime());
 		Assert.assertEquals(1, CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getPart());
 		Assert.assertEquals(4, CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
 				.getPartTotal());
@@ -82,8 +81,8 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 				.getDirectory());
 		Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
 				.getGroup());
-		Assert.assertEquals(new Date(1335826800000L),
-				CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getSnapshotDate());
+		Assert.assertEquals(1335826800000L, CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
+				.getSnapshotDate().getTime());
 		Assert.assertEquals(1, CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getPart());
 		Assert.assertEquals(4, CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
 				.getPartTotal());
@@ -95,8 +94,9 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getDirectory());
 		Assert.assertEquals("2012/05",
 				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getGroup());
-		Assert.assertEquals(new Date(1335826800000L),
-				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());
+		Assert.assertEquals(1335826800000L,
+				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate()
+						.getTime());
 		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
 				.getPart());
 		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
