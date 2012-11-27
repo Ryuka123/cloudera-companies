@@ -2,6 +2,7 @@ package com.cloudera.companies.core.test.remote;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
@@ -23,8 +24,8 @@ public abstract class CompaniesRemoteBaseTest extends CompaniesBaseTestCase {
 					new WildcardFileFilter("com.cloudera.companies.core.ingest-*-hadoop-job.jar"), TrueFileFilter.TRUE)
 			.iterator().next().getAbsolutePath();
 
-	public int execute(String bin, String... args) throws ExecuteException, IOException {
-		return getExecutor().execute(getCommandLine(bin, args));
+	public int execute(Map<String, String> env, String bin, String... args) throws ExecuteException, IOException {
+		return getExecutor().execute(getCommandLine(bin, args), env);
 	}
 
 	public CommandLine getCommandLine(String bin, String... args) {
