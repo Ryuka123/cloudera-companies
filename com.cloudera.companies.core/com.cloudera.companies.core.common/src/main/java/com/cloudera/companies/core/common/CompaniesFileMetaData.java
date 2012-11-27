@@ -1,6 +1,7 @@
 package com.cloudera.companies.core.common;
 
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -57,16 +58,14 @@ public class CompaniesFileMetaData {
 		if (fileNameMatcher.matches()) {
 			try {
 				if (fileNameMatcher.groupCount() == 3) {
-					return new CompaniesFileMetaData(name, directory,
-							new SimpleDateFormat(DATE_FORMAT_GROUP).format(new SimpleDateFormat(formatDate)
-									.parse(fileNameMatcher.group(1))), Integer.parseInt(fileNameMatcher.group(2)),
-							Integer.parseInt(fileNameMatcher.group(3)),
-							new SimpleDateFormat(formatDate).parse(fileNameMatcher.group(1)));
+					return new CompaniesFileMetaData(name, directory, getDateFormat(DATE_FORMAT_GROUP).format(
+							getDateFormat(formatDate).parse(fileNameMatcher.group(1))),
+							Integer.parseInt(fileNameMatcher.group(2)), Integer.parseInt(fileNameMatcher.group(3)),
+							getDateFormat(formatDate).parse(fileNameMatcher.group(1)));
 				} else if (fileNameMatcher.groupCount() == 1) {
-					return new CompaniesFileMetaData(name, directory,
-							new SimpleDateFormat(DATE_FORMAT_GROUP).format(new SimpleDateFormat(formatDate)
-									.parse(fileNameMatcher.group(1))), 1, 1,
-							new SimpleDateFormat(formatDate).parse(fileNameMatcher.group(1)));
+					return new CompaniesFileMetaData(name, directory, getDateFormat(DATE_FORMAT_GROUP).format(
+							getDateFormat(formatDate).parse(fileNameMatcher.group(1))), 1, 1, getDateFormat(formatDate)
+							.parse(fileNameMatcher.group(1)));
 				}
 
 			} catch (Exception e) {
@@ -82,7 +81,7 @@ public class CompaniesFileMetaData {
 		}
 		Date date = null;
 		try {
-			date = new SimpleDateFormat(DATE_FORMAT_GROUP).parse(group);
+			date = getDateFormat(DATE_FORMAT_GROUP).parse(group);
 		} catch (ParseException exception) {
 			throw new IOException("Could not parse group", exception);
 		}
@@ -90,7 +89,7 @@ public class CompaniesFileMetaData {
 	}
 
 	public static String parseGroupFile(String group) throws IOException {
-		return new SimpleDateFormat(DATE_FORMAT_GROUP_FILE).format(parseGroupDate(group)).toUpperCase();
+		return getDateFormat(DATE_FORMAT_GROUP_FILE).format(parseGroupDate(group)).toUpperCase();
 	}
 
 	public static String[] parseRecord(String record) throws IOException {
@@ -98,6 +97,12 @@ public class CompaniesFileMetaData {
 			throw new IllegalArgumentException("null record");
 		}
 		return FILE_RECORD_PARSER.parseLine(record);
+	}
+
+	private static DateFormat getDateFormat(String format) {
+		DateFormat dateFormat = new SimpleDateFormat(format);
+		dateFormat.setTimeZone(CompaniesConstants.DATE_TIMEZONE);
+		return dateFormat;
 	}
 
 	@Override
