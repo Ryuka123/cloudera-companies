@@ -16,7 +16,7 @@ public class CompaniesRemoteIngestTest extends CompaniesRemoteBaseTest {
 		private static final long serialVersionUID = 1L;
 		{
 			putAll(System.getenv());
-			put("HADOOP_OPTS", "-Xmx1024m");
+			put("HADOOP_CLIENT_OPTS", "-Xmx1024m");
 		}
 	};
 

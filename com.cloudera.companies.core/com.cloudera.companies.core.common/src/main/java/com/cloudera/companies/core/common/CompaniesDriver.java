@@ -194,7 +194,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 		if (log.isInfoEnabled()) {
 			log.info("Driver [" + this.getClass().getCanonicalName() + "] "
-					+ (exitValue == RETURN_SUCCESS ? "sucessful" : "failed") + "with exit value [" + exitValue
+					+ (exitValue == RETURN_SUCCESS ? "sucessful" : "failed") + " with exit value [" + exitValue
 					+ "] in " + formatTime(timeExecute) + " and total time " + formatTime(timeTotal));
 		}
 
