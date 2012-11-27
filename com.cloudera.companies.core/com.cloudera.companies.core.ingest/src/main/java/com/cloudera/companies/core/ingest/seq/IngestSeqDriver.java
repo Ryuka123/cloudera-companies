@@ -153,10 +153,10 @@ public class IngestSeqDriver extends CompaniesDriver {
 			if (log.isInfoEnabled()) {
 				log.info("No suitable files found to ingest");
 			}
-			return RETURN_SUCCESS;
+			return RETURN_FAILURE_INVALID_ARGS;
 		}
 
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_COUNT, hdfsInputDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_VALID, hdfsInputDirs.size());
 
 		return RETURN_SUCCESS;
 	}

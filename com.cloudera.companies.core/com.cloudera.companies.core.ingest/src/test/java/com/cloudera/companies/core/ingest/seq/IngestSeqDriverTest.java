@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
+import com.cloudera.companies.core.ingest.IngestFSCKDriver;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 import com.cloudera.companies.core.test.CompaniesEmbeddedTestCase;
@@ -20,6 +21,7 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 
 	private IngestZipDriver ingestZipDriver;
 	private IngestSeqDriver ingestSeqDriver;
+	private IngestFSCKDriver ingestFSCKDriver;
 
 	public IngestSeqDriverTest() throws IOException {
 		super();
@@ -31,6 +33,7 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 		super.setUp();
 		ingestZipDriver = new IngestZipDriver(getFileSystem().getConf());
 		ingestSeqDriver = new IngestSeqDriver(getFileSystem().getConf());
+		ingestFSCKDriver = new IngestFSCKDriver(getFileSystem().getConf());
 	}
 
 	@Test
@@ -150,6 +153,9 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 				ingestZipDriver.run(new String[] { PATH_LOCAL_INPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_ZIP }));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestSeqDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
+		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
+				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
+		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
 	}
 
 }

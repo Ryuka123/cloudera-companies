@@ -104,8 +104,12 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 		}
 	}
 
+	private void cleanClounters() {
+		counters.clear();
+	}
+
 	public Long getCounter(String group, Enum<?> counter) {
-		return (counters.get(group) != null && counters.get(group).get(counter) == null) ? null : counters.get(group)
+		return (counters.get(group) == null || counters.get(group).get(counter) == null) ? null : counters.get(group)
 				.get(counter);
 	}
 
@@ -142,6 +146,8 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 			getConf().addResource(CONF_SETTINGS);
 		}
 
+		cleanClounters();
+		
 		if (log.isDebugEnabled() && getConf() != null) {
 			log.debug("Driver [" + this.getClass().getCanonicalName() + "] initialised with configuration properties:");
 			for (Entry<String, String> entry : getConf())

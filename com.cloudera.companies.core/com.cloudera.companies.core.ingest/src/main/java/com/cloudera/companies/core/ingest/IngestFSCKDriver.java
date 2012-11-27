@@ -3,9 +3,11 @@ package com.cloudera.companies.core.ingest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +35,11 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	private static Logger log = LoggerFactory.getLogger(IngestFSCKDriver.class);
 
 	protected static String CONF_FSCK_CLEAN = "companies.ingest.fsck.clean";
+
+	private static final String COUNTER_GROUP_ZIP = IngestZipDriver.class.getPackage().getName() + "."
+			+ IngestFSCKDriver.class.getSimpleName();
+	private static final String COUNTER_GROUP_SEQ = IngestSeqDriver.class.getPackage().getName() + "."
+			+ IngestFSCKDriver.class.getSimpleName();
 
 	private String hdfsDirZip;
 	private String hdfsDirSeq;
@@ -317,29 +324,23 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	@Override
 	public int execute() throws Exception {
 
-		incramentCounter(IngestZipDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_COUNT, getCount(fileZips));
-		incramentCounter(IngestZipDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_PARTIAL_COUNT, getCount(fileZipsPartials));
-		incramentCounter(IngestZipDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_UNKNOWN_COUNT, getCount(fileZipsUnknowns));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_DATASETS, getCountGroup(fileZips));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_VALID, getCount(fileZips));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_PARTIAL, getCount(fileZipsPartials));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_UNKNOWN, getCount(fileZipsUnknowns));
 
-		incramentCounter(IngestSeqDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_COUNT, getCount(fileSeqs));
-		incramentCounter(IngestSeqDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_PARTIAL_COUNT, getCount(fileSeqsPartials));
-		incramentCounter(IngestSeqDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_UNKNOWN_COUNT, getCount(fileSeqsUnknowns));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_DATASETS, getCountGroup(fileSeqs));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_VALID, getCount(fileSeqs));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, getCount(fileSeqsPartials));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, getCount(fileSeqsUnknowns));
 
 		int cleanZips = 0, cleanSeqs = 0;
 		if (getConf().getBoolean(CONF_FSCK_CLEAN, false)) {
 			cleanZips = executeClean(fileZipsPartials) + executeClean(fileZipsUnknowns);
 			cleanSeqs = executeClean(fileSeqsPartials) + executeClean(fileSeqsUnknowns);
 		}
-		incramentCounter(IngestZipDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_CLEANED_COUNT, cleanZips);
-		incramentCounter(IngestSeqDriver.class.getPackage().getName() + "." + IngestFSCKDriver.class.getSimpleName(),
-				Counter.FILES_CLEANED_COUNT, cleanSeqs);
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_CLEANED, cleanZips);
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_CLEANED, cleanSeqs);
 
 		isComplete.set(true);
 
@@ -368,6 +369,25 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		return RETURN_SUCCESS;
 	}
 
+	public List<String> testIntegretity(int dataSetCount, int inputFilesCount) throws IOException {
+		List<String> errors = new ArrayList<String>();
+		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_DATASETS, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_VALID, inputFilesCount);
+		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_PARTIAL, 0L);
+		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_UNKNOWN, 0L);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_DATASETS, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_VALID, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, 0L);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, 0L);
+		return errors;
+	}
+
+	private void testIntegrity(List<String> errors, String group, Enum<?> counter, long value) throws IOException {
+		if (getCounter(group, counter) == null || getCounter(group, counter) != value) {
+			errors.add(group + "." + counter.toString() + "==" + getCounter(group, counter) + "!=" + value);
+		}
+	}
+
 	private int executeClean(Map<String, Set<String>> map) throws IOException {
 		int count = 0;
 		for (String parent : map.keySet()) {
@@ -386,6 +406,19 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		for (String group : map.keySet()) {
 			for (String name : map.get(group)) {
 				count += (name.equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME) ? 0 : 1);
+			}
+		}
+		return count;
+	}
+
+	private int getCountGroup(Map<String, Set<String>> map) {
+		int count = 0;
+		for (String group : map.keySet()) {
+			for (String name : map.get(group)) {
+				if (!name.equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)) {
+					count++;
+					break;
+				}
 			}
 		}
 		return count;
