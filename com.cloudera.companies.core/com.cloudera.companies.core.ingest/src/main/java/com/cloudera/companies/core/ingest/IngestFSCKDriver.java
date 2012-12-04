@@ -54,8 +54,6 @@ public class IngestFSCKDriver extends CompaniesDriver {
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
-	private FileSystem hdfsFileSystem;
-
 	public IngestFSCKDriver() {
 		super();
 	}
@@ -91,7 +89,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	@Override
 	public int validate() throws IOException {
 
-		hdfsFileSystem = FileSystem.get(getConf());
+		FileSystem hdfsFileSystem = FileSystem.get(getConf());
 
 		Path hdfsPathZip = new Path(hdfsDirZip);
 		if (!hdfsFileSystem.exists(hdfsPathZip)) {
@@ -351,9 +349,6 @@ public class IngestFSCKDriver extends CompaniesDriver {
 
 	@Override
 	public int cleanup() throws IOException {
-
-		hdfsFileSystem.close();
-
 		return RETURN_SUCCESS;
 	}
 
@@ -392,9 +387,9 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		int count = 0;
 		for (String parent : map.keySet()) {
 			for (String file : map.get(parent)) {
-				count += hdfsFileSystem.delete(new Path(parent, file), true) ? 1 : 0;
-				if (!hdfsFileSystem.listFiles(new Path(parent), true).hasNext()) {
-					hdfsFileSystem.delete(new Path(parent), true);
+				count += FileSystem.get(getConf()).delete(new Path(parent, file), true) ? 1 : 0;
+				if (!FileSystem.get(getConf()).listFiles(new Path(parent), true).hasNext()) {
+					FileSystem.get(getConf()).delete(new Path(parent), true);
 				}
 			}
 		}

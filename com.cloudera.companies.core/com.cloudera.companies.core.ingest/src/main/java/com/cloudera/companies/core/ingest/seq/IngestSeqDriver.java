@@ -245,9 +245,6 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 	@Override
 	public int cleanup() throws IOException {
-
-		FileSystem.get(getConf()).close();
-
 		return RETURN_SUCCESS;
 	}
 
