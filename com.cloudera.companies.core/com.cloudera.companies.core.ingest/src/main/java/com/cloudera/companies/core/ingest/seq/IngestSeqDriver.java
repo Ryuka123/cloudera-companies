@@ -17,10 +17,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ToolRunner;
 import org.slf4j.Logger;
@@ -33,6 +31,7 @@ import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyCompositeCom
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupComparator;
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupPartitioner;
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileZipFileInputFormat;
+import com.cloudera.companies.core.common.mapreduce.CompaniesNullOutputFormat;
 import com.cloudera.companies.core.ingest.IngestConstants.Counter;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
@@ -45,13 +44,12 @@ public class IngestSeqDriver extends CompaniesDriver {
 	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
 
 	private Path hdfsOutputPath;
+	private Set<Path> hdfsOutputDirs;
 	private Set<Path> hdfsInputDirs;
 
 	private String hdfsInputDir;
 	private String hdfsOutputDir;
 
-	private FileSystem hdfsFileSystem;
-	
 	public IngestSeqDriver() {
 		super();
 	}
@@ -87,7 +85,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int validate() throws IOException {
 
-		 hdfsFileSystem = FileSystem.get(getConf());
+		FileSystem hdfsFileSystem = FileSystem.get(getConf());
 
 		Path hdfsInputPath = new Path(hdfsInputDir);
 		if (!hdfsFileSystem.exists(hdfsInputPath)) {
@@ -112,15 +110,12 @@ public class IngestSeqDriver extends CompaniesDriver {
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
 		if (log.isInfoEnabled()) {
-			log.info("HDFS output directory [" + hdfsInputDir + "] validated as [" + hdfsInputPath + "]");
+			log.info("HDFS input directory [" + hdfsInputDir + "] validated as [" + hdfsInputPath + "]");
 		}
 
 		hdfsOutputPath = new Path(hdfsOutputDir);
-		if (hdfsFileSystem.exists(hdfsOutputPath)) {
-			if (log.isErrorEnabled()) {
-				log.error("HDFS output directory [" + hdfsOutputDir + "] already exists");
-			}
-			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+		if (!hdfsFileSystem.exists(hdfsOutputPath)) {
+			hdfsFileSystem.mkdirs(hdfsOutputPath);
 		}
 		if (!HDFSClientUtil.canDoAction(hdfsFileSystem, UserGroupInformation.getCurrentUser().getUserName(),
 				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputPath.getParent(), FsAction.ALL)) {
@@ -149,6 +144,26 @@ public class IngestSeqDriver extends CompaniesDriver {
 				}
 			}
 		}
+		boolean ouputDirsExist = false;
+		hdfsOutputDirs = new HashSet<Path>();
+		for (Path inputPath : hdfsInputDirs) {
+			Path ouputPath = new Path(inputPath.toString().replace(hdfsInputDir, hdfsOutputDir));
+			if (hdfsFileSystem.exists(ouputPath)) {
+				ouputDirsExist = true;
+				if (log.isErrorEnabled()) {
+					log.error("HDFS output directory [" + ouputPath + "] already exists");
+				}
+			} else {
+				hdfsOutputDirs.add(ouputPath);
+			}
+		}
+		if (ouputDirsExist) {
+			if (log.isErrorEnabled()) {
+				log.error("HDFS output directory [" + hdfsOutputDir
+						+ "] contains sub output directoires that already exist");
+			}
+			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+		}
 		if (hdfsInputDirs.isEmpty()) {
 			if (log.isInfoEnabled()) {
 				log.info("No suitable files found to ingest");
@@ -168,6 +183,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		job.setJobName(getClass().getSimpleName());
 
+		job.getConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", Boolean.FALSE.toString());
+
 		job.setPartitionerClass(CompaniesFileKeyGroupPartitioner.class);
 		job.setGroupingComparatorClass(CompaniesFileKeyGroupComparator.class);
 		job.setSortComparatorClass(CompaniesFileKeyCompositeComparator.class);
@@ -182,7 +199,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		job.setReducerClass(IngestSeqReducer.class);
 
 		job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
-		LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
+		CompaniesNullOutputFormat.setOutputFormatClass(job);
 
 		FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
 		FileOutputFormat.setOutputPath(job, hdfsOutputPath);
@@ -198,7 +215,21 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		jobSubmitted.set(true);
 
-		int exitCode = job.waitForCompletion(true) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+		int exitCode = job.waitForCompletion(log.isInfoEnabled()) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+
+		if (exitCode == RETURN_SUCCESS) {
+			for (Path ouputPath : hdfsOutputDirs) {
+				if (FileSystem.get(getConf()).exists(ouputPath)) {
+					FileSystem.get(getConf()).create(
+							new Path(ouputPath, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
+				} else {
+					exitCode = RETURN_FAILURE_RUNTIME;
+					if (log.isErrorEnabled()) {
+						log.error("Expected output directory [" + ouputPath + "] not found");
+					}
+				}
+			}
+		}
 
 		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_PROCESSED_VALID,
 				Counter.RECORDS_PROCESSED_MALFORMED, Counter.RECORDS_PROCESSED_MALFORMED_KEY,
@@ -215,7 +246,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int cleanup() throws IOException {
 
-		hdfsFileSystem.close();
+		FileSystem.get(getConf()).close();
 
 		return RETURN_SUCCESS;
 	}

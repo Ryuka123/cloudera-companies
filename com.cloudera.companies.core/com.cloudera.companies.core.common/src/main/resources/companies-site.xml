@@ -14,10 +14,6 @@
 		<value>1</value>
 	</property>
 	<property>
-		<name>mapreduce.fileoutputcommitter.marksuccessfuljobs</name>
-		<value>true</value>
-	</property>
-	<property>
 		<name>mapred.compress.map.output</name>
 		<value>${filter.compression}</value>
 	</property>
