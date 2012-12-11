@@ -184,6 +184,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		job.setJobName(getClass().getSimpleName());
 
 		job.getConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", Boolean.FALSE.toString());
+		job.getConfiguration().set("hadoop.job.history.user.location", Boolean.FALSE.toString());
 
 		job.setPartitionerClass(CompaniesFileKeyGroupPartitioner.class);
 		job.setGroupingComparatorClass(CompaniesFileKeyGroupComparator.class);
