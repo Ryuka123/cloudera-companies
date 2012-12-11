@@ -108,7 +108,6 @@ public class CompaniesFileZipFileInputFormat extends FileInputFormat<Text, Text>
 				inputSteamReader.close();
 				inputStreamZip.close();
 				inputStreamFs.close();
-				fs.close();
 			}
 
 		};
