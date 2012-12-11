@@ -27,6 +27,7 @@ public class CompaniesLocalClusterTest extends ClusterMapReduceTestCase implemen
 	@After
 	@Override
 	public void tearDown() throws Exception {
+		getFileSystem().close();
 		super.tearDown();
 	}
 

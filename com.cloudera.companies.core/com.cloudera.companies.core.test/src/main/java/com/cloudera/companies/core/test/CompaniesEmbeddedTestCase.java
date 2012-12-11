@@ -38,6 +38,7 @@ public abstract class CompaniesEmbeddedTestCase extends HadoopTestCase implement
 	@After
 	@Override
 	public void tearDown() throws Exception {
+		getFileSystem().close();
 		super.tearDown();
 	}
 

@@ -33,7 +33,6 @@ import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupPartiti
 import com.cloudera.companies.core.common.mapreduce.CompaniesFileZipFileInputFormat;
 import com.cloudera.companies.core.common.mapreduce.CompaniesNullOutputFormat;
 import com.cloudera.companies.core.ingest.IngestConstants.Counter;
-import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
 public class IngestSeqDriver extends CompaniesDriver {
 
@@ -46,6 +45,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	private Path hdfsOutputPath;
 	private Set<Path> hdfsOutputDirs;
 	private Set<Path> hdfsInputDirs;
+	private Set<Path> hdfsSkippedDirs;
 
 	private String hdfsInputDir;
 	private String hdfsOutputDir;
@@ -65,7 +65,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
-				log.error("Usage: " + IngestZipDriver.class.getSimpleName()
+				log.error("Usage: " + IngestSeqDriver.class.getSimpleName()
 						+ " [generic options] <hdfs-input-dir-zip> <hdfs-output-dir-seq>");
 				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
 				PrintStream printStream = new PrintStream(byteArrayPrintStream);
@@ -118,9 +118,9 @@ public class IngestSeqDriver extends CompaniesDriver {
 			hdfsFileSystem.mkdirs(hdfsOutputPath);
 		}
 		if (!HDFSClientUtil.canDoAction(hdfsFileSystem, UserGroupInformation.getCurrentUser().getUserName(),
-				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputPath.getParent(), FsAction.ALL)) {
+				UserGroupInformation.getCurrentUser().getGroupNames(), hdfsOutputPath, FsAction.ALL)) {
 			if (log.isErrorEnabled()) {
-				log.error("HDFS parent of output directory [" + hdfsOutputDir
+				log.error("HDFS output directory [" + hdfsOutputDir
 						+ "] has too restrictive permissions to write as user ["
 						+ UserGroupInformation.getCurrentUser().getUserName() + "]");
 			}
@@ -131,6 +131,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 		}
 
 		hdfsInputDirs = new HashSet<Path>();
+		hdfsSkippedDirs = new HashSet<Path>();
 		RemoteIterator<LocatedFileStatus> inputFiles = hdfsFileSystem.listFiles(hdfsInputPath, true);
 		while (inputFiles.hasNext()) {
 			LocatedFileStatus fileStatus = inputFiles.next();
@@ -141,6 +142,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 				if (!hdfsFileSystem.exists(new Path(hdfsOutputPath.toString() + fileSuccessParentSuffix,
 						CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME))) {
 					hdfsInputDirs.add(fileStatus.getPath().getParent());
+				} else {
+					hdfsSkippedDirs.add(fileStatus.getPath().getParent());
 				}
 			}
 		}
@@ -164,14 +167,6 @@ public class IngestSeqDriver extends CompaniesDriver {
 			}
 			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
 		}
-		if (hdfsInputDirs.isEmpty()) {
-			if (log.isInfoEnabled()) {
-				log.info("No suitable files found to ingest");
-			}
-			return RETURN_FAILURE_INVALID_ARGS;
-		}
-
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_VALID, hdfsInputDirs.size());
 
 		return RETURN_SUCCESS;
 	}
@@ -179,64 +174,86 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int execute() throws IOException, InterruptedException, ClassNotFoundException {
 
-		Job job = Job.getInstance(getConf());
+		int exitCode = RETURN_SUCCESS;
+		int numberFailures = 0;
+		Job job = null;
 
-		job.setJobName(getClass().getSimpleName());
+		if (hdfsInputDirs.isEmpty()) {
+			if (log.isWarnEnabled()) {
+				log.warn("No suitable files found to ingest");
+			}
+		} else {
 
-		job.getConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", Boolean.FALSE.toString());
-		job.getConfiguration().set("hadoop.job.history.user.location", Boolean.FALSE.toString());
+			job = Job.getInstance(getConf());
 
-		job.setPartitionerClass(CompaniesFileKeyGroupPartitioner.class);
-		job.setGroupingComparatorClass(CompaniesFileKeyGroupComparator.class);
-		job.setSortComparatorClass(CompaniesFileKeyCompositeComparator.class);
+			job.setJobName(getClass().getSimpleName());
 
-		job.setMapOutputKeyClass(CompaniesFileKey.class);
-		job.setMapOutputValueClass(Text.class);
+			job.getConfiguration().set("mapreduce.fileoutputcommitter.marksuccessfuljobs", Boolean.FALSE.toString());
+			job.getConfiguration().set("hadoop.job.history.user.location", Boolean.FALSE.toString());
 
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(Text.class);
+			job.setPartitionerClass(CompaniesFileKeyGroupPartitioner.class);
+			job.setGroupingComparatorClass(CompaniesFileKeyGroupComparator.class);
+			job.setSortComparatorClass(CompaniesFileKeyCompositeComparator.class);
 
-		job.setMapperClass(IngestSeqMapper.class);
-		job.setReducerClass(IngestSeqReducer.class);
+			job.setMapOutputKeyClass(CompaniesFileKey.class);
+			job.setMapOutputValueClass(Text.class);
 
-		job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
-		CompaniesNullOutputFormat.setOutputFormatClass(job);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(Text.class);
 
-		job.setNumReduceTasks(hdfsInputDirs.size());
+			job.setMapperClass(IngestSeqMapper.class);
+			job.setReducerClass(IngestSeqReducer.class);
 
-		FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
-		FileOutputFormat.setOutputPath(job, hdfsOutputPath);
+			job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
+			CompaniesNullOutputFormat.setOutputFormatClass(job);
 
-		MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, SequenceFileOutputFormat.class, Text.class,
-				Text.class);
+			job.setNumReduceTasks(hdfsInputDirs.size());
 
-		job.setJarByClass(IngestSeqDriver.class);
+			FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
+			FileOutputFormat.setOutputPath(job, hdfsOutputPath);
 
-		if (log.isInfoEnabled()) {
-			log.info("Sequence file ingest job about to be submitted");
-		}
+			MultipleOutputs.addNamedOutput(job, NAMED_OUTPUT_PARTION_SEQ_FILES, SequenceFileOutputFormat.class,
+					Text.class, Text.class);
 
-		jobSubmitted.set(true);
+			job.setJarByClass(IngestSeqDriver.class);
 
-		int exitCode = job.waitForCompletion(log.isInfoEnabled()) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+			if (log.isInfoEnabled()) {
+				log.info("Sequence file ingest job about to be submitted");
+			}
 
-		if (exitCode == RETURN_SUCCESS) {
-			for (Path ouputPath : hdfsOutputDirs) {
-				if (FileSystem.get(getConf()).exists(ouputPath)) {
-					FileSystem.get(getConf()).create(
-							new Path(ouputPath, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
-				} else {
-					exitCode = RETURN_FAILURE_RUNTIME;
-					if (log.isErrorEnabled()) {
-						log.error("Expected output directory [" + ouputPath + "] not found");
+			jobSubmitted.set(true);
+
+			exitCode = job.waitForCompletion(log.isInfoEnabled()) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+
+			if (exitCode == RETURN_SUCCESS) {
+				for (Path ouputPath : hdfsOutputDirs) {
+					if (FileSystem.get(getConf()).exists(ouputPath)) {
+						FileSystem.get(getConf()).create(
+								new Path(ouputPath, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
+					} else {
+						exitCode = RETURN_FAILURE_RUNTIME;
+						numberFailures++;
+						if (log.isErrorEnabled()) {
+							log.error("Expected output directory [" + ouputPath + "] not found");
+						}
 					}
 				}
 			}
 		}
 
-		importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS_PROCESSED_VALID,
-				Counter.RECORDS_PROCESSED_MALFORMED, Counter.RECORDS_PROCESSED_MALFORMED_KEY,
-				Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_VALID, hdfsInputDirs.size()
+				+ hdfsSkippedDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SUCCESS,
+				hdfsInputDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SKIP,
+				hdfsSkippedDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_FAILURE, numberFailures);
+
+		if (job != null) {
+			importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] {
+					Counter.RECORDS_PROCESSED_VALID, Counter.RECORDS_PROCESSED_MALFORMED,
+					Counter.RECORDS_PROCESSED_MALFORMED_KEY, Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
+		}
 
 		if (log.isInfoEnabled()) {
 			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));

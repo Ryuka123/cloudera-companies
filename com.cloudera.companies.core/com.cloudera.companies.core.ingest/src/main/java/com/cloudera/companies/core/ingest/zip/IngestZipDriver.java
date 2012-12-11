@@ -260,9 +260,7 @@ public class IngestZipDriver extends CompaniesDriver {
 				fileCopyFailure.size());
 
 		if (log.isInfoEnabled()) {
-			log.info("File ingest complete, successfully processing [" + fileCopySuccess.size() + "] files, skipping ["
-					+ fileCopySkip.size() + "] files and failing on [" + fileCopyFailure.size() + "] files with ["
-					+ numberThreads + "] threads");
+			log.info("Zip file ingest " + (fileCopyFailure.size() == 0 ? "completed" : "failed"));
 		}
 
 		return fileCopyFailure.size() == 0 ? CompaniesDriver.RETURN_SUCCESS : CompaniesDriver.RETURN_FAILURE_RUNTIME;

@@ -65,8 +65,6 @@ public class IngestSeqDriverTest extends CompaniesEmbeddedTestCase {
 					CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
 					ingestSeqDriver.run(new String[] { CompaniesBaseTestCase.getPathLocal(inputNonExistantDir),
 							outputDir }));
-			Assert.assertEquals(CompaniesDriver.RETURN_FAILURE_INVALID_ARGS,
-					ingestSeqDriver.run(new String[] { inputDir, outputFile }));
 
 			if (!UserGroupInformation.getCurrentUser().getUserName().equals("root")) {
 
