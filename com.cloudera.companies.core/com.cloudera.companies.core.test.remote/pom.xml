@@ -101,7 +101,7 @@
 									<outputDirectory>target/${project.assembly-test-dir}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
-							<skip>${maven.integration-test.skip}</skip>
+							<skip>${maven.assembly.skip}</skip>
 						</configuration>
 					</execution>
 					<execution>
