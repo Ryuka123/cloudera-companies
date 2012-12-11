@@ -40,7 +40,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 	public static final String NAMED_OUTPUT_PARTION_SEQ_FILES = "PartionedSequenceFiles";
 
-	private static AtomicBoolean jobSubmitted = new AtomicBoolean(false);
+	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
 	private Path hdfsOutputPath;
 	private Set<Path> hdfsOutputDirs;
@@ -61,7 +61,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int prepare(String[] args) {
 
-		jobSubmitted.set(false);
+		isComplete.set(false);
 
 		if (args == null || args.length != 2) {
 			if (log.isErrorEnabled()) {
@@ -178,6 +178,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 		int numberFailures = 0;
 		Job job = null;
 
+		isComplete.set(false);
+
 		if (hdfsInputDirs.isEmpty()) {
 			if (log.isWarnEnabled()) {
 				log.warn("No suitable files found to ingest");
@@ -221,8 +223,6 @@ public class IngestSeqDriver extends CompaniesDriver {
 				log.info("Sequence file ingest job about to be submitted");
 			}
 
-			jobSubmitted.set(true);
-
 			exitCode = job.waitForCompletion(log.isInfoEnabled()) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
 
 			if (exitCode == RETURN_SUCCESS) {
@@ -240,6 +240,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 				}
 			}
 		}
+
+		isComplete.set(true);
 
 		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_VALID, hdfsInputDirs.size()
 				+ hdfsSkippedDirs.size());
@@ -271,9 +273,9 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int shutdown() {
 
-		if (!jobSubmitted.get()) {
+		if (!isComplete.get()) {
 			if (log.isErrorEnabled()) {
-				log.error("Halting before job submitted");
+				log.error("Halting before completion, files may only be partly copied to HDFS");
 			}
 		}
 
