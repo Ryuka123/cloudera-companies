@@ -16,8 +16,8 @@ public class CompaniesFileKey implements WritableComparable<CompaniesFileKey> {
 	}
 
 	public CompaniesFileKey(String group, String name) {
-		this.name = name;
 		this.group = group;
+		this.name = name;
 	}
 
 	@Override

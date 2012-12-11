@@ -201,7 +201,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
 		CompaniesNullOutputFormat.setOutputFormatClass(job);
-
+		
 		FileInputFormat.setInputPaths(job, hdfsInputDirs.toArray(new Path[hdfsInputDirs.size()]));
 		FileOutputFormat.setOutputPath(job, hdfsOutputPath);
 

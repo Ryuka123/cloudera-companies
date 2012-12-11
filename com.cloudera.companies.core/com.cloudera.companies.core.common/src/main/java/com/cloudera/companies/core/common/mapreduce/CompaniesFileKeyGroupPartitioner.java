@@ -7,7 +7,7 @@ public class CompaniesFileKeyGroupPartitioner extends Partitioner<CompaniesFileK
 
 	@Override
 	public int getPartition(CompaniesFileKey key, Text value, int numPartitions) {
-		return key.getGroup().hashCode() % numPartitions;
+		return (int) ((((long) key.getGroup().hashCode()) & 0x00000000ffffffffL) % numPartitions);
 	}
 
 }

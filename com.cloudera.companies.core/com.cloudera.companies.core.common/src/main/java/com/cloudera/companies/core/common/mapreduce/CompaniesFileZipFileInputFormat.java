@@ -7,7 +7,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -31,7 +30,6 @@ public class CompaniesFileZipFileInputFormat extends FileInputFormat<Text, Text>
 			throws IOException, InterruptedException {
 		return new RecordReader<Text, Text>() {
 
-			private FileSystem fs;
 			private Path filePath;
 
 			private FSDataInputStream inputStreamFs;
@@ -49,8 +47,8 @@ public class CompaniesFileZipFileInputFormat extends FileInputFormat<Text, Text>
 					InterruptedException {
 
 				filePath = ((FileSplit) split).getPath();
-				fs = filePath.getFileSystem(context.getConfiguration());
-				inputStreamZip = new ZipInputStream(inputStreamFs = fs.open(filePath));
+				inputStreamZip = new ZipInputStream(inputStreamFs = filePath.getFileSystem(context.getConfiguration())
+						.open(filePath));
 
 				if ((fileMetaData = nextFileMetaData()) == null) {
 					throw new IOException("Could not find suitably named file in table of contents of zip file ["
