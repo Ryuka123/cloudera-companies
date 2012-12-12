@@ -12,8 +12,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
-import com.cloudera.companies.core.ingest.IngestConstants.Counter;
+import com.cloudera.companies.core.ingest.IngestUtil.Counter;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKey;
 import com.cloudera.companies.core.test.CompaniesBaseTestCase;
 
 public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
@@ -25,7 +25,8 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 	private static final String INPUT_GROUP = "2012/01";
 	private static final String INPUT_NAME = "Company X";
 	private static final Text INPUT_GROUP_TEXT = new Text(INPUT_GROUP);
-	private static final CompaniesFileKey INPUT_KEY = new CompaniesFileKey(INPUT_GROUP, INPUT_NAME);
+	private static final CompaniesFileKey INPUT_KEY = new CompaniesFileKey(Counter.RECORDS_VALID, INPUT_GROUP,
+			INPUT_NAME);
 	private static final String INPUT_RECORD = "\""
 			+ INPUT_NAME
 			+ "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
@@ -48,7 +49,7 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 		mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
 		mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
 		mapDriver.runTest();
-		Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_PROCESSED_VALID).getValue());
+		Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_VALID).getValue());
 	}
 
 	@Test

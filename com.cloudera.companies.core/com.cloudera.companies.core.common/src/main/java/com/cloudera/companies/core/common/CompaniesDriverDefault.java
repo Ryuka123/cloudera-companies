@@ -2,13 +2,13 @@ package com.cloudera.companies.core.common;
 
 import org.apache.hadoop.conf.Configuration;
 
-public class CompaniesDriverSuccess extends CompaniesDriver {
+public class CompaniesDriverDefault extends CompaniesDriver {
 
-	public CompaniesDriverSuccess() {
+	public CompaniesDriverDefault() {
 		super();
 	}
 
-	public CompaniesDriverSuccess(Configuration conf) {
+	public CompaniesDriverDefault(Configuration conf) {
 		super(conf);
 	}
 

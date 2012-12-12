@@ -90,16 +90,16 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 		File fileReduce = new File("./target/MAY-2012-r-00000");
 		Assert.assertEquals("MAY-2012-r-00000",
-				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getName());
+				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getName());
 		Assert.assertEquals("./target",
-				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getDirectory());
+				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getDirectory());
 		Assert.assertEquals("2012/05",
-				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getGroup());
+				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getGroup());
 		Assert.assertEquals(new Date(1335830400000L),
-				CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());
-		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
+				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
 				.getPart());
-		Assert.assertEquals(1, CompaniesFileMetaData.parsePathReduce(fileReduce.getName(), fileReduce.getParent())
+		Assert.assertEquals(1, CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
 				.getPartTotal());
 
 	}
@@ -150,34 +150,4 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 
 	}
 
-	@Test
-	public void testParseGroup() throws IOException {
-
-		boolean thrown = false;
-		try {
-			Assert.assertNull(CompaniesFileMetaData.parseGroupFile(null));
-		} catch (IllegalArgumentException e) {
-			thrown = true;
-		}
-		Assert.assertTrue(thrown);
-
-		thrown = false;
-		try {
-			Assert.assertEquals("", CompaniesFileMetaData.parseGroupFile(""));
-		} catch (IOException e) {
-			thrown = true;
-		}
-		Assert.assertTrue(thrown);
-
-		thrown = false;
-		try {
-			Assert.assertEquals("", CompaniesFileMetaData.parseGroupFile("AA"));
-		} catch (IOException e) {
-			thrown = true;
-		}
-		Assert.assertTrue(thrown);
-
-		Assert.assertEquals("2012/06/JUN-2012", CompaniesFileMetaData.parseGroupFile("2012/06"));
-
-	}
 }

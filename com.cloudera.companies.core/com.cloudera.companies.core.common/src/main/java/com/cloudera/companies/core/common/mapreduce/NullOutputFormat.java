@@ -11,14 +11,14 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.LazyOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-public class CompaniesNullOutputFormat<K, V> extends LazyOutputFormat<K, V> {
+public class NullOutputFormat<K, V> extends LazyOutputFormat<K, V> {
 
 	public static void setOutputFormatClass(Job job) {
 		job.setOutputFormatClass(LazyOutputFormat.class);
-		job.getConfiguration().setClass(OUTPUT_FORMAT, CompaniesNullOutputFormatInner.class, OutputFormat.class);
+		job.getConfiguration().setClass(OUTPUT_FORMAT, NullOutputFormatInner.class, OutputFormat.class);
 	}
 
-	public static class CompaniesNullOutputFormatInner<K, V> extends TextOutputFormat<K, V> {
+	public static class NullOutputFormatInner<K, V> extends TextOutputFormat<K, V> {
 
 		/**
 		 * Overide so we tolerate the existance of the output dir, so that

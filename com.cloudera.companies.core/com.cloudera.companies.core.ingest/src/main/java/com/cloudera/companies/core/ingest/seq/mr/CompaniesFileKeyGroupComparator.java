@@ -1,4 +1,4 @@
-package com.cloudera.companies.core.common.mapreduce;
+package com.cloudera.companies.core.ingest.seq.mr;
 
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;

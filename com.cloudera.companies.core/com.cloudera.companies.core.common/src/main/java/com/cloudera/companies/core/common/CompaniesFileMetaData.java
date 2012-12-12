@@ -15,9 +15,8 @@ public class CompaniesFileMetaData {
 	public static final int FILE_FIELDS_NUMBER = 53;
 
 	private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
-	private static final String DATE_FORMAT_FILE_NAME_REDUCE = "MMM-yyyy";
 	private static final String DATE_FORMAT_GROUP = "yyyy/MM";
-	private static final String DATE_FORMAT_GROUP_FILE = DATE_FORMAT_GROUP + "/" + DATE_FORMAT_FILE_NAME_REDUCE;
+	private static final String DATE_FORMAT_FILE_NAME_OUTPUT = "MMM-yyyy";
 
 	private static final String FILE_NAME_REGEX_BASE = "BasicCompanyData-(20[0-9][0-9]-[0-1][0-9]-[0-3][0-9])-part([1-9])_([1-9])";
 	private static final Pattern FILE_NAME_PATTERN_ZIP = Pattern.compile(FILE_NAME_REGEX_BASE + ".zip");
@@ -41,8 +40,8 @@ public class CompaniesFileMetaData {
 		return parsePath(FILE_NAME_PATTERN_CSV, DATE_FORMAT_FILE_NAME, name, directory);
 	}
 
-	public static CompaniesFileMetaData parsePathReduce(String name, String directory) throws IOException {
-		return parsePath(FILE_NAME_PATTERN_REDUCE, DATE_FORMAT_FILE_NAME_REDUCE, name, directory);
+	public static CompaniesFileMetaData parsePathSeq(String name, String directory) throws IOException {
+		return parsePath(FILE_NAME_PATTERN_REDUCE, DATE_FORMAT_FILE_NAME_OUTPUT, name, directory);
 	}
 
 	private static CompaniesFileMetaData parsePath(Pattern patternPath, String formatDate, String name, String directory)
@@ -75,7 +74,7 @@ public class CompaniesFileMetaData {
 		throw new IOException("File name [" + name + "] did not match regex specification [" + patternPath + "]");
 	}
 
-	public static Date parseGroupDate(String group) throws IOException {
+	public static Date parsePathGroup(String group) throws IOException {
 		if (group == null) {
 			throw new IllegalArgumentException("null group");
 		}
@@ -88,8 +87,8 @@ public class CompaniesFileMetaData {
 		return date;
 	}
 
-	public static String parseGroupFile(String group) throws IOException {
-		return getDateFormat(DATE_FORMAT_GROUP_FILE).format(parseGroupDate(group)).toUpperCase();
+	public static String parsePathGroupFile(String group) throws IOException {
+		return getDateFormat(DATE_FORMAT_FILE_NAME_OUTPUT).format(parsePathGroup(group)).toUpperCase();
 	}
 
 	public static String[] parseRecord(String record) throws IOException {

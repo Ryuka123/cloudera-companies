@@ -26,13 +26,14 @@ import org.slf4j.LoggerFactory;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyCompositeComparator;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupComparator;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKeyGroupPartitioner;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileZipFileInputFormat;
-import com.cloudera.companies.core.common.mapreduce.CompaniesNullOutputFormat;
-import com.cloudera.companies.core.ingest.IngestConstants.Counter;
+import com.cloudera.companies.core.common.mapreduce.NullOutputFormat;
+import com.cloudera.companies.core.ingest.IngestUtil;
+import com.cloudera.companies.core.ingest.IngestUtil.Counter;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKey;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKeyCompositeComparator;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKeyGroupComparator;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKeyGroupPartitioner;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileZipFileInputFormat;
 
 public class IngestSeqDriver extends CompaniesDriver {
 
@@ -135,7 +136,8 @@ public class IngestSeqDriver extends CompaniesDriver {
 		RemoteIterator<LocatedFileStatus> inputFiles = hdfsFileSystem.listFiles(hdfsInputPath, true);
 		while (inputFiles.hasNext()) {
 			LocatedFileStatus fileStatus = inputFiles.next();
-			if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)) {
+			if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)
+					&& fileStatus.getPath().getParent() != null && fileStatus.getPath().getParent().getParent() != null) {
 				String fileSuccessParent = fileStatus.getPath().getParent().toString();
 				String fileSuccessParentSuffix = fileSuccessParent.substring(fileSuccessParent.indexOf(hdfsInputPath
 						.toString()) + hdfsInputPath.toString().length());
@@ -150,7 +152,11 @@ public class IngestSeqDriver extends CompaniesDriver {
 		boolean ouputDirsExist = false;
 		hdfsOutputDirs = new HashSet<Path>();
 		for (Path inputPath : hdfsInputDirs) {
-			Path ouputPath = new Path(inputPath.toString().replace(hdfsInputDir, hdfsOutputDir));
+			Path ouputPath = new Path(hdfsOutputDir, IngestUtil.getNamespacedPath(
+					Counter.RECORDS_VALID,
+					inputPath.toString().substring(
+							inputPath.toString().indexOf(hdfsInputPath.toString()) + hdfsInputPath.toString().length()
+									+ 1)));
 			if (hdfsFileSystem.exists(ouputPath)) {
 				ouputDirsExist = true;
 				if (log.isErrorEnabled()) {
@@ -207,7 +213,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 			job.setReducerClass(IngestSeqReducer.class);
 
 			job.setInputFormatClass(CompaniesFileZipFileInputFormat.class);
-			CompaniesNullOutputFormat.setOutputFormatClass(job);
+			NullOutputFormat.setOutputFormatClass(job);
 
 			job.setNumReduceTasks(hdfsInputDirs.size());
 
@@ -243,18 +249,15 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		isComplete.set(true);
 
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_VALID, hdfsInputDirs.size()
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES, hdfsInputDirs.size()
 				+ hdfsSkippedDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SUCCESS,
-				hdfsInputDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_SKIP,
-				hdfsSkippedDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_PROCCESSED_FAILURE, numberFailures);
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_SUCCESS, hdfsInputDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_SKIP, hdfsSkippedDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_FAILURE, numberFailures);
 
 		if (job != null) {
-			importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] {
-					Counter.RECORDS_PROCESSED_VALID, Counter.RECORDS_PROCESSED_MALFORMED,
-					Counter.RECORDS_PROCESSED_MALFORMED_KEY, Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE });
+			importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS,
+					Counter.RECORDS_VALID, Counter.RECORDS_MALFORMED, Counter.RECORDS_DUPLICATE });
 		}
 
 		if (log.isInfoEnabled()) {

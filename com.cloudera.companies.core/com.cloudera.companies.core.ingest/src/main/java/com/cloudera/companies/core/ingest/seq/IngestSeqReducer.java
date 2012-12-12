@@ -6,9 +6,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
-import com.cloudera.companies.core.common.CompaniesFileMetaData;
-import com.cloudera.companies.core.common.mapreduce.CompaniesFileKey;
-import com.cloudera.companies.core.ingest.IngestConstants.Counter;
+import com.cloudera.companies.core.ingest.IngestUtil;
+import com.cloudera.companies.core.ingest.IngestUtil.Counter;
+import com.cloudera.companies.core.ingest.seq.mr.CompaniesFileKey;
 
 public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text> {
 
@@ -29,19 +29,21 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 			InterruptedException {
 		String lastName = null;
 		for (Text value : values) {
-			if (lastName == null || !lastName.equals(key.getName())) {
-				lastName = key.getName();
-				Text keyOutput = new Text(key.getGroup());
-				Text valueOutput = new Text(value);
-				try {
+			Text keyOutput = new Text(key.getGroup());
+			Text valueOutput = new Text(value);
+			try {
+				if (lastName != null && !lastName.equals("") && lastName.equals(key.getName())) {
+					context.getCounter(Counter.RECORDS_VALID).increment(-1);
+					context.getCounter(Counter.RECORDS_DUPLICATE).increment(1);
 					multipleOutputs.write(IngestSeqDriver.NAMED_OUTPUT_PARTION_SEQ_FILES, keyOutput, valueOutput,
-							CompaniesFileMetaData.parseGroupFile(key.getGroup()));
-				} catch (IllegalArgumentException exception) {
-					context.write(keyOutput, valueOutput);
+							IngestUtil.getNamespacedPathFile(Counter.RECORDS_DUPLICATE, key.getGroup()));
+				} else {
+					lastName = key.getName();
+					multipleOutputs.write(IngestSeqDriver.NAMED_OUTPUT_PARTION_SEQ_FILES, keyOutput, valueOutput,
+							IngestUtil.getNamespacedPathFile(key.getType(), key.getGroup()));
 				}
-			} else {
-				context.getCounter(Counter.RECORDS_PROCESSED_VALID).increment(-1);
-				context.getCounter(Counter.RECORDS_PROCESSED_MALFORMED_DUPLICATE).increment(1);
+			} catch (IllegalArgumentException exception) {
+				context.write(keyOutput, valueOutput);
 			}
 		}
 	}

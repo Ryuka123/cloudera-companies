@@ -39,7 +39,7 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 				ingestSeqDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 	@Test
@@ -54,7 +54,7 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 		getFileSystem().createNewFile(new Path(PATH_HDFS_OUTPUT_DIR_SEQ + "/2012/test3.txt"));
 		Assert.assertEquals(CompaniesDriver.RETURN_WARNING_DIRTY_INGEST,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 	@Test
@@ -68,10 +68,10 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 		getFileSystem().createNewFile(new Path(PATH_HDFS_OUTPUT_DIR_SEQ + "/2012/test3.txt"));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 	@Test
@@ -87,10 +87,10 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 		getFileSystem().createNewFile(new Path(PATH_HDFS_OUTPUT_DIR_SEQ + "/2012/test3.txt"));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 	
 	@Test
@@ -100,7 +100,7 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 		getFileSystem().mkdirs(new Path(PATH_HDFS_OUTPUT_DIR_SEQ));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedTestCase {
 		getFileSystem().mkdirs(new Path(PATH_HDFS_OUTPUT_DIR_SEQ));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 }

@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 import com.cloudera.companies.core.common.CompaniesDriver;
 import com.cloudera.companies.core.common.CompaniesFileMetaData;
 import com.cloudera.companies.core.common.hdfs.HDFSClientUtil;
-import com.cloudera.companies.core.ingest.IngestConstants.Counter;
+import com.cloudera.companies.core.ingest.IngestUtil.Counter;
 import com.cloudera.companies.core.ingest.seq.IngestSeqDriver;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
@@ -51,6 +51,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	private Map<String, Set<String>> fileSeqs;
 	private Map<String, Set<String>> fileSeqsPartials;
 	private Map<String, Set<String>> fileSeqsUnknowns;
+	private Map<String, Set<String>> fileSeqsInvalids;
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
@@ -153,21 +154,13 @@ public class IngestFSCKDriver extends CompaniesDriver {
 			String parent = fileStatus.getPath().getParent().toString();
 			String group = parent.substring(parent.indexOf(hdfsPathZip.toString()) + hdfsPathZip.toString().length());
 			group = group.length() > 0 ? group.substring(1) : group;
-			try {
-				if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)
-						|| (CompaniesFileMetaData.parseGroupDate(group) != null && CompaniesFileMetaData.parsePathZip(
-								file, parent) != null)) {
-					if (fileZips.get(parent) == null) {
-						fileZips.put(parent, new HashSet<String>());
-					}
-					fileZips.get(parent).add(fileStatus.getPath().getName());
-				} else {
-					if (fileZipsUnknowns.get(parent) == null) {
-						fileZipsUnknowns.put(parent, new HashSet<String>());
-					}
-					fileZipsUnknowns.get(parent).add(fileStatus.getPath().getName());
+			if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)
+					|| IngestUtil.isNamespacedFile(file, parent, group, Counter.FILES_SUCCESS)) {
+				if (fileZips.get(parent) == null) {
+					fileZips.put(parent, new HashSet<String>());
 				}
-			} catch (IOException exception) {
+				fileZips.get(parent).add(fileStatus.getPath().getName());
+			} else {
 				if (fileZipsUnknowns.get(parent) == null) {
 					fileZipsUnknowns.put(parent, new HashSet<String>());
 				}
@@ -232,29 +225,29 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		fileSeqs = new HashMap<String, Set<String>>();
 		fileSeqsPartials = new HashMap<String, Set<String>>();
 		fileSeqsUnknowns = new HashMap<String, Set<String>>();
+		fileSeqsInvalids = new HashMap<String, Set<String>>();
 
 		RemoteIterator<LocatedFileStatus> fileSeqsItr = hdfsFileSystem.listFiles(hdfsPathSeq, true);
 		while (fileSeqsItr.hasNext()) {
 			LocatedFileStatus fileStatus = fileSeqsItr.next();
 			String file = fileStatus.getPath().getName();
 			String parent = fileStatus.getPath().getParent().toString();
-			String group = parent.substring(parent.indexOf(hdfsPathSeq.toString()) + hdfsPathSeq.toString().length());
-			group = group.length() > 0 ? group.substring(1) : group;
-			try {
-				if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)
-						|| (CompaniesFileMetaData.parseGroupDate(group) != null && CompaniesFileMetaData
-								.parsePathReduce(file, parent) != null)) {
-					if (fileSeqs.get(parent) == null) {
-						fileSeqs.put(parent, new HashSet<String>());
-					}
-					fileSeqs.get(parent).add(fileStatus.getPath().getName());
-				} else {
-					if (fileSeqsUnknowns.get(parent) == null) {
-						fileSeqsUnknowns.put(parent, new HashSet<String>());
-					}
-					fileSeqsUnknowns.get(parent).add(fileStatus.getPath().getName());
+			String namespace = parent.substring(parent.indexOf(hdfsPathSeq.toString())
+					+ hdfsPathSeq.toString().length());
+			namespace = namespace.length() > 0 ? namespace.substring(1) : namespace;
+			if (fileStatus.getPath().getName().equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)
+					|| IngestUtil.isNamespacedFile(file, parent, namespace, Counter.RECORDS_VALID)) {
+				if (fileSeqs.get(parent) == null) {
+					fileSeqs.put(parent, new HashSet<String>());
 				}
-			} catch (IOException exception) {
+				fileSeqs.get(parent).add(fileStatus.getPath().getName());
+			} else if (IngestUtil.isNamespacedFile(file, parent, namespace, Counter.RECORDS_MALFORMED)
+					|| IngestUtil.isNamespacedFile(file, parent, namespace, Counter.RECORDS_DUPLICATE)) {
+				if (fileSeqsInvalids.get(parent) == null) {
+					fileSeqsInvalids.put(parent, new HashSet<String>());
+				}
+				fileSeqsInvalids.get(parent).add(fileStatus.getPath().getName());
+			} else {
 				if (fileSeqsUnknowns.get(parent) == null) {
 					fileSeqsUnknowns.put(parent, new HashSet<String>());
 				}
@@ -296,7 +289,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 			for (String file : fileSeqs.get(parent)) {
 				if (!file.equals(CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME)) {
 					filesNum++;
-					CompaniesFileMetaData fileMetaData = CompaniesFileMetaData.parsePathReduce(file, parent);
+					CompaniesFileMetaData fileMetaData = CompaniesFileMetaData.parsePathSeq(file, parent);
 					filesPartSum += fileMetaData.getPart();
 					if (filesPartTotal == Integer.MAX_VALUE) {
 						filesPartTotal = fileMetaData.getPartTotal();
@@ -322,13 +315,18 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	@Override
 	public int execute() throws Exception {
 
-		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_DATASETS, getCountGroup(fileZips));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.DATASETS, getCountGroup(fileZips));
+		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES, getCount(fileZips) + getCount(fileZipsPartials)
+				+ getCount(fileZipsUnknowns));
 		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_VALID, getCount(fileZips));
 		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_PARTIAL, getCount(fileZipsPartials));
 		incramentCounter(COUNTER_GROUP_ZIP, Counter.FILES_UNKNOWN, getCount(fileZipsUnknowns));
 
-		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_DATASETS, getCountGroup(fileSeqs));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.DATASETS, getCountGroup(fileSeqs));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES, getCount(fileSeqs) + getCount(fileSeqsPartials)
+				+ getCount(fileSeqsUnknowns));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_VALID, getCount(fileSeqs));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_INVALID, getCount(fileSeqsInvalids));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, getCount(fileSeqsPartials));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, getCount(fileSeqsUnknowns));
 
@@ -364,14 +362,16 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		return RETURN_SUCCESS;
 	}
 
-	public List<String> testIntegretity(int dataSetCount, int inputFilesCount) throws IOException {
+	public List<String> testIntegretity(int dataSetCount, int inputFilesCount, int outputInvalidFilesCount)
+			throws IOException {
 		List<String> errors = new ArrayList<String>();
-		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_DATASETS, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.DATASETS, dataSetCount);
 		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_VALID, inputFilesCount);
 		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_PARTIAL, 0L);
 		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_UNKNOWN, 0L);
-		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_DATASETS, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.DATASETS, dataSetCount);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_VALID, dataSetCount);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_INVALID, outputInvalidFilesCount);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, 0L);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, 0L);
 		return errors;

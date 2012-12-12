@@ -34,7 +34,7 @@ public class IngestDriverTest extends CompaniesEmbeddedTestCase {
 						PATH_HDFS_OUTPUT_DIR_SEQ }));
 		Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
 				ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8).isEmpty());
+		Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 	}
 
 }

@@ -10,11 +10,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.cloudera.companies.core.common.CompaniesDriver;
-import com.cloudera.companies.core.common.CompaniesDriverSuccess;
+import com.cloudera.companies.core.common.CompaniesDriverDefault;
 import com.cloudera.companies.core.ingest.seq.IngestSeqDriver;
 import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
-public class IngestDriver extends CompaniesDriverSuccess {
+public class IngestDriver extends CompaniesDriverDefault {
 
 	private static Logger log = LoggerFactory.getLogger(IngestDriver.class);
 
