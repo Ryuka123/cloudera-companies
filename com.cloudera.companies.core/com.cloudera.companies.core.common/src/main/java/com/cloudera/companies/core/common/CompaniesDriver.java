@@ -32,7 +32,7 @@ public abstract class CompaniesDriver extends Configured implements Tool {
 
 	public static final String CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME = "_SUCCESS";
 
-	private static final int FORMAT_TIME_FACTOR = 50;
+	private static final int FORMAT_TIME_FACTOR = 10;
 
 	private volatile int exitValue = RETURN_FAILURE_RUNTIME;
 
