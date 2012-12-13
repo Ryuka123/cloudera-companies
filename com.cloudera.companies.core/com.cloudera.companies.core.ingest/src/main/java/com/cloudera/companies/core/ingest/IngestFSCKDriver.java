@@ -51,7 +51,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 	private Map<String, Set<String>> fileSeqs;
 	private Map<String, Set<String>> fileSeqsPartials;
 	private Map<String, Set<String>> fileSeqsUnknowns;
-	private Map<String, Set<String>> fileSeqsInvalids;
+	private Map<String, Set<String>> fileSeqsErrors;
 
 	private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
@@ -94,10 +94,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 
 		Path hdfsPathZip = new Path(hdfsDirZip);
 		if (!hdfsFileSystem.exists(hdfsPathZip)) {
-			if (log.isErrorEnabled()) {
-				log.error("HDFS zip directory [" + hdfsDirZip + "] does not exist");
-			}
-			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+			hdfsFileSystem.mkdirs(hdfsPathZip);
 		}
 		if (!hdfsFileSystem.isDirectory(hdfsPathZip)) {
 			if (log.isErrorEnabled()) {
@@ -119,10 +116,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 
 		Path hdfsPathSeq = new Path(hdfsDirSeq);
 		if (!hdfsFileSystem.exists(hdfsPathSeq)) {
-			if (log.isErrorEnabled()) {
-				log.error("HDFS sequence-file directory [" + hdfsPathSeq + "] does not exist");
-			}
-			return CompaniesDriver.RETURN_FAILURE_INVALID_ARGS;
+			hdfsFileSystem.mkdirs(hdfsPathSeq);
 		}
 		if (!hdfsFileSystem.isDirectory(hdfsPathSeq)) {
 			if (log.isErrorEnabled()) {
@@ -225,7 +219,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		fileSeqs = new HashMap<String, Set<String>>();
 		fileSeqsPartials = new HashMap<String, Set<String>>();
 		fileSeqsUnknowns = new HashMap<String, Set<String>>();
-		fileSeqsInvalids = new HashMap<String, Set<String>>();
+		fileSeqsErrors = new HashMap<String, Set<String>>();
 
 		RemoteIterator<LocatedFileStatus> fileSeqsItr = hdfsFileSystem.listFiles(hdfsPathSeq, true);
 		while (fileSeqsItr.hasNext()) {
@@ -243,10 +237,10 @@ public class IngestFSCKDriver extends CompaniesDriver {
 				fileSeqs.get(parent).add(fileStatus.getPath().getName());
 			} else if (IngestUtil.isNamespacedFile(file, parent, namespace, Counter.RECORDS_MALFORMED)
 					|| IngestUtil.isNamespacedFile(file, parent, namespace, Counter.RECORDS_DUPLICATE)) {
-				if (fileSeqsInvalids.get(parent) == null) {
-					fileSeqsInvalids.put(parent, new HashSet<String>());
+				if (fileSeqsErrors.get(parent) == null) {
+					fileSeqsErrors.put(parent, new HashSet<String>());
 				}
-				fileSeqsInvalids.get(parent).add(fileStatus.getPath().getName());
+				fileSeqsErrors.get(parent).add(fileStatus.getPath().getName());
 			} else {
 				if (fileSeqsUnknowns.get(parent) == null) {
 					fileSeqsUnknowns.put(parent, new HashSet<String>());
@@ -326,7 +320,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES, getCount(fileSeqs) + getCount(fileSeqsPartials)
 				+ getCount(fileSeqsUnknowns));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_VALID, getCount(fileSeqs));
-		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_INVALID, getCount(fileSeqsInvalids));
+		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_ERROR, getCount(fileSeqsErrors));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, getCount(fileSeqsPartials));
 		incramentCounter(COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, getCount(fileSeqsUnknowns));
 
@@ -371,7 +365,7 @@ public class IngestFSCKDriver extends CompaniesDriver {
 		testIntegrity(errors, COUNTER_GROUP_ZIP, Counter.FILES_UNKNOWN, 0L);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.DATASETS, dataSetCount);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_VALID, dataSetCount);
-		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_INVALID, outputInvalidFilesCount);
+		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_ERROR, outputInvalidFilesCount);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_PARTIAL, 0L);
 		testIntegrity(errors, COUNTER_GROUP_SEQ, Counter.FILES_UNKNOWN, 0L);
 		return errors;

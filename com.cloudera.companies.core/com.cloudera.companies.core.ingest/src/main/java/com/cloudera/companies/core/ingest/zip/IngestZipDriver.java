@@ -251,6 +251,7 @@ public class IngestZipDriver extends CompaniesDriver {
 
 		isComplete.set(true);
 
+		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.DATASETS, fileCopyByGroup.size());
 		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES, fileCopySuccess.size()
 				+ fileCopySkip.size() + fileCopyFailure.size());
 		incramentCounter(IngestZipDriver.class.getCanonicalName(), Counter.FILES_SUCCESS,

@@ -180,7 +180,7 @@ public class IngestSeqDriver extends CompaniesDriver {
 	@Override
 	public int execute() throws IOException, InterruptedException, ClassNotFoundException {
 
-		int exitCode = RETURN_SUCCESS;
+		boolean jobSuccess = false;
 		int numberFailures = 0;
 		Job job = null;
 
@@ -229,19 +229,18 @@ public class IngestSeqDriver extends CompaniesDriver {
 				log.info("Sequence file ingest job about to be submitted");
 			}
 
-			exitCode = job.waitForCompletion(log.isInfoEnabled()) ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
+			jobSuccess = job.waitForCompletion(log.isInfoEnabled());
 
-			if (exitCode == RETURN_SUCCESS) {
-				for (Path ouputPath : hdfsOutputDirs) {
-					if (FileSystem.get(getConf()).exists(ouputPath)) {
+			for (Path ouputPath : hdfsOutputDirs) {
+				if (FileSystem.get(getConf()).exists(ouputPath)) {
+					if (jobSuccess) {
 						FileSystem.get(getConf()).create(
 								new Path(ouputPath, CompaniesDriver.CONF_MR_FILECOMMITTER_SUCCEEDED_FILE_NAME));
-					} else {
-						exitCode = RETURN_FAILURE_RUNTIME;
-						numberFailures++;
-						if (log.isErrorEnabled()) {
-							log.error("Expected output directory [" + ouputPath + "] not found");
-						}
+					}
+				} else {
+					numberFailures++;
+					if (log.isErrorEnabled()) {
+						log.error("Expected output directory [" + ouputPath + "] not found");
 					}
 				}
 			}
@@ -249,11 +248,12 @@ public class IngestSeqDriver extends CompaniesDriver {
 
 		isComplete.set(true);
 
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES, hdfsInputDirs.size()
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.DATASETS, hdfsInputDirs.size()
 				+ hdfsSkippedDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_SUCCESS, hdfsInputDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_SKIP, hdfsSkippedDirs.size());
-		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.FILES_FAILURE, numberFailures);
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.DATASETS_SUCCESS, hdfsInputDirs.size()
+				- numberFailures);
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.DATASETS_SKIP, hdfsSkippedDirs.size());
+		incramentCounter(IngestSeqDriver.class.getCanonicalName(), Counter.DATASETS_FAILURE, numberFailures);
 
 		if (job != null) {
 			importCounters(IngestSeqDriver.class.getCanonicalName(), job, new Counter[] { Counter.RECORDS,
@@ -261,10 +261,10 @@ public class IngestSeqDriver extends CompaniesDriver {
 		}
 
 		if (log.isInfoEnabled()) {
-			log.info("Sequence file ingest " + (exitCode == RETURN_SUCCESS ? "completed" : "failed"));
+			log.info("Sequence file ingest " + (jobSuccess ? "completed" : "failed"));
 		}
 
-		return exitCode;
+		return jobSuccess ? RETURN_SUCCESS : RETURN_FAILURE_RUNTIME;
 
 	}
 

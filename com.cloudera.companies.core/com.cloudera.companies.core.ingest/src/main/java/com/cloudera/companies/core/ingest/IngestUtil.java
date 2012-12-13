@@ -9,13 +9,13 @@ public class IngestUtil {
 	public enum Counter {
 
 		// Dataset counters
-		DATASETS,
+		DATASETS, DATASETS_SUCCESS, DATASETS_SKIP, DATASETS_FAILURE,
 
 		// File action counters
 		FILES, FILES_SUCCESS, FILES_SKIP, FILES_FAILURE,
 
 		// File status counters
-		FILES_VALID, FILES_INVALID, FILES_PARTIAL, FILES_UNKNOWN, FILES_CLEANED,
+		FILES_VALID, FILES_ERROR, FILES_PARTIAL, FILES_UNKNOWN, FILES_CLEANED,
 
 		// Record action counters
 		RECORDS, RECORDS_VALID("cleansed"), RECORDS_MALFORMED("erroneous/malformed"), RECORDS_DUPLICATE(
