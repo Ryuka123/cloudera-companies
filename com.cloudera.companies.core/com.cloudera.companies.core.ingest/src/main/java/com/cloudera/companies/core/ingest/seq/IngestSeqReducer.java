@@ -29,7 +29,7 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 			InterruptedException {
 		String lastName = null;
 		for (Text value : values) {
-			Text keyOutput = new Text(key.getGroup());
+			Text keyOutput = new Text(key.getName());
 			Text valueOutput = new Text(value);
 			try {
 				if (lastName != null && !lastName.equals("") && lastName.equals(key.getName())) {

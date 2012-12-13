@@ -25,6 +25,7 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 	private static final String INPUT_GROUP = "2012/01";
 	private static final String INPUT_NAME = "Company X";
 	private static final Text INPUT_GROUP_TEXT = new Text(INPUT_GROUP);
+	private static final Text INPUT_NAME_TEXT = new Text(INPUT_NAME);
 	private static final CompaniesFileKey INPUT_KEY = new CompaniesFileKey(Counter.RECORDS_VALID, INPUT_GROUP,
 			INPUT_NAME);
 	private static final String INPUT_RECORD = "\""
@@ -57,14 +58,14 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
 		List<Text> values = new ArrayList<Text>();
 		values.add(INPUT_RECORD_TEXT);
 		reduceDriver.withInput(INPUT_KEY, values);
-		reduceDriver.withOutput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
+		reduceDriver.withOutput(INPUT_NAME_TEXT, INPUT_RECORD_TEXT);
 		reduceDriver.runTest();
 	}
 
 	@Test
 	public void testMapReduce() {
 		mapReduceDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
-		mapReduceDriver.withOutput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
+		mapReduceDriver.withOutput(INPUT_NAME_TEXT, INPUT_RECORD_TEXT);
 		mapReduceDriver.runTest();
 	}
 

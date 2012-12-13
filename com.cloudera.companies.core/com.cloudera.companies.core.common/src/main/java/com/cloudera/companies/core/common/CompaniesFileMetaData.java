@@ -14,6 +14,9 @@ public class CompaniesFileMetaData {
 
 	public static final int FILE_FIELDS_NUMBER = 53;
 
+	public static final String FILE_ESCAPE_CHAR = "@";
+	public static final String FILE_ESCAPE_CHAR_ESCAPED = FILE_ESCAPE_CHAR + FILE_ESCAPE_CHAR;
+
 	private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
 	private static final String DATE_FORMAT_GROUP = "yyyy/MM";
 	private static final String DATE_FORMAT_FILE_NAME_OUTPUT = "MMM-yyyy";
@@ -23,7 +26,7 @@ public class CompaniesFileMetaData {
 	private static final Pattern FILE_NAME_PATTERN_CSV = Pattern.compile(FILE_NAME_REGEX_BASE + ".csv");
 	private static final Pattern FILE_NAME_PATTERN_REDUCE = Pattern.compile("([A-Z]{3}-20[0-9][0-9])-r-[0-9]{5}");
 
-	private static final CSVParser FILE_RECORD_PARSER = new CSVParser(',', '"', '\\', true, true);
+	private static final CSVParser FILE_RECORD_PARSER = new CSVParser(',', '"', FILE_ESCAPE_CHAR.charAt(0), true, true);
 
 	private String name;
 	private String directory;
@@ -92,10 +95,9 @@ public class CompaniesFileMetaData {
 	}
 
 	public static String[] parseRecord(String record) throws IOException {
-		if (record == null) {
-			throw new IllegalArgumentException("null record");
-		}
-		return FILE_RECORD_PARSER.parseLine(record);
+		// Investigate using faster, single pass parsing routine, without the
+		// need to pre-escape escape sequences
+		return FILE_RECORD_PARSER.parseLine(record.replace(FILE_ESCAPE_CHAR, FILE_ESCAPE_CHAR_ESCAPED));
 	}
 
 	private static DateFormat getDateFormat(String format) {

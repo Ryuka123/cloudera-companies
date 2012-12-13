@@ -91,10 +91,10 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 		File fileReduce = new File("./target/MAY-2012-r-00000");
 		Assert.assertEquals("MAY-2012-r-00000",
 				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getName());
-		Assert.assertEquals("./target",
-				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getDirectory());
-		Assert.assertEquals("2012/05",
-				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getGroup());
+		Assert.assertEquals("./target", CompaniesFileMetaData
+				.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getDirectory());
+		Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
+				.getGroup());
 		Assert.assertEquals(new Date(1335830400000L),
 				CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());
 		Assert.assertEquals(1, CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
@@ -120,12 +120,19 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("AA"));
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("AA BB"));
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord(" AA BB "));
+		Assert.assertArrayEquals(new String[] { "" },
+				CompaniesFileMetaData.parseRecord("" + CompaniesFileMetaData.FILE_ESCAPE_CHAR));
 
-		Assert.assertArrayEquals(new String[] { "A" }, CompaniesFileMetaData.parseRecord("\"A\""));
+		Assert.assertArrayEquals(new String[] { "A" }, CompaniesFileMetaData.parseRecord("\"A\"A"));
+		Assert.assertArrayEquals(new String[] { "A" },
+				CompaniesFileMetaData.parseRecord("\"A\"" + CompaniesFileMetaData.FILE_ESCAPE_CHAR));
+		Assert.assertArrayEquals(new String[] { "A" + CompaniesFileMetaData.FILE_ESCAPE_CHAR },
+				CompaniesFileMetaData.parseRecord("\"A" + CompaniesFileMetaData.FILE_ESCAPE_CHAR + "\""));
 		Assert.assertArrayEquals(new String[] { "AA" }, CompaniesFileMetaData.parseRecord("\"AA\""));
 		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFileMetaData.parseRecord("\"AA BB\""));
 		Assert.assertArrayEquals(new String[] { "AA BB" }, CompaniesFileMetaData.parseRecord(" \"AA BB\" "));
 		Assert.assertArrayEquals(new String[] { " AA BB " }, CompaniesFileMetaData.parseRecord("\" AA BB \""));
+		Assert.assertArrayEquals(new String[] { "AA BB\\" }, CompaniesFileMetaData.parseRecord("\"AA BB\\\""));
 		Assert.assertArrayEquals(new String[] { "AA\" BB" }, CompaniesFileMetaData.parseRecord("\"AA\"\" BB\""));
 		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFileMetaData.parseRecord("\"\"\"AA BB\"\"\""));
 		Assert.assertArrayEquals(new String[] { "\"AA BB\"" }, CompaniesFileMetaData.parseRecord(" \"\"\"AA BB\"\"\" "));
@@ -139,6 +146,8 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 				CompaniesFileMetaData.parseRecord(" \"AA BB\" , \"AA BB\" "));
 		Assert.assertArrayEquals(new String[] { " AA BB ", " AA BB " },
 				CompaniesFileMetaData.parseRecord("\" AA BB \",\" AA BB \""));
+		Assert.assertArrayEquals(new String[] { "AA BB\\", "AA BB\\" },
+				CompaniesFileMetaData.parseRecord("\"AA BB\\\",\"AA BB\\\""));
 		Assert.assertArrayEquals(new String[] { "AA\" BB", "AA\" BB" },
 				CompaniesFileMetaData.parseRecord("\"AA\"\" BB\",\"AA\"\" BB\""));
 		Assert.assertArrayEquals(new String[] { "\"AA BB\"", "\"AA BB\"" },
