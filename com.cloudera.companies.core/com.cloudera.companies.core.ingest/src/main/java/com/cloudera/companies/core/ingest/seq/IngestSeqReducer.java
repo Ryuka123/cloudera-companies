@@ -43,6 +43,7 @@ public class IngestSeqReducer extends Reducer<CompaniesFileKey, Text, Text, Text
 							IngestUtil.getNamespacedPathFile(key.getType(), key.getGroup()));
 				}
 			} catch (IllegalArgumentException exception) {
+				// necessary for MRUnit to work with MultipleOutputs
 				context.write(keyOutput, valueOutput);
 			}
 		}
