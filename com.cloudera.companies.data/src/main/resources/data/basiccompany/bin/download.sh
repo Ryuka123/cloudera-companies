@@ -19,6 +19,7 @@ function download() {
 						else
 						 	echo "ERROR: Could not download ["$URI"]"
 						fi
+						sleep 2
 						echo -n "INFO: Sleeping to prevent getting flagged as a DoS " && sleep 15 && echo "[done]"
 					fi
 				fi

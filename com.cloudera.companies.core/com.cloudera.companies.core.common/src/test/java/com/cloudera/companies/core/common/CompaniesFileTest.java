@@ -107,14 +107,6 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
 	@Test
 	public void testParseRecord() throws IOException {
 
-		boolean thrown = false;
-		try {
-			Assert.assertNull(CompaniesFileMetaData.parseRecord(null));
-		} catch (IllegalArgumentException e) {
-			thrown = true;
-		}
-		Assert.assertTrue(thrown);
-
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord(""));
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("A"));
 		Assert.assertArrayEquals(new String[] { "" }, CompaniesFileMetaData.parseRecord("AA"));
