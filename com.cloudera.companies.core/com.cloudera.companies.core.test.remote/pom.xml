@@ -66,25 +66,6 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>unpack-runtime</id>
-						<phase>process-test-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.apache.hadoop</groupId>
-									<artifactId>hadoop-dist</artifactId>
-									<version>${hadoop.version}</version>
-									<type>tar.gz</type>
-									<outputDirectory>target/${project.runtime-test-dir}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-							<skip>${maven.integration-test.skip}</skip>
-						</configuration>
-					</execution>
-					<execution>
 						<id>unpack-assembly</id>
 						<phase>process-test-resources</phase>
 						<goals>

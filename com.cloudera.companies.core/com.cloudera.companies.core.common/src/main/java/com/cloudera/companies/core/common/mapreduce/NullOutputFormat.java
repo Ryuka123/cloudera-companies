@@ -13,24 +13,24 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 public class NullOutputFormat<K, V> extends LazyOutputFormat<K, V> {
 
-	public static void setOutputFormatClass(Job job) {
-		job.setOutputFormatClass(LazyOutputFormat.class);
-		job.getConfiguration().setClass(OUTPUT_FORMAT, NullOutputFormatInner.class, OutputFormat.class);
-	}
+  public static void setOutputFormatClass(Job job) {
+    job.setOutputFormatClass(LazyOutputFormat.class);
+    job.getConfiguration().setClass(OUTPUT_FORMAT, NullOutputFormatInner.class, OutputFormat.class);
+  }
 
-	public static class NullOutputFormatInner<K, V> extends TextOutputFormat<K, V> {
+  public static class NullOutputFormatInner<K, V> extends TextOutputFormat<K, V> {
 
-		/**
-		 * Overide so we tolerate the existance of the output dir, so that
-		 * MultileOutputs writers can write to
-		 */
-		@Override
-		public void checkOutputSpecs(JobContext job) throws FileAlreadyExistsException, IOException {
-			Path outDir = getOutputPath(job);
-			if (outDir == null) {
-				throw new InvalidJobConfException("Output directory not set.");
-			}
-		}
+    /**
+     * Overide so we tolerate the existance of the output dir, so that
+     * MultileOutputs writers can write to
+     */
+    @Override
+    public void checkOutputSpecs(JobContext job) throws FileAlreadyExistsException, IOException {
+      Path outDir = getOutputPath(job);
+      if (outDir == null) {
+        throw new InvalidJobConfException("Output directory not set.");
+      }
+    }
 
-	}
+  }
 }

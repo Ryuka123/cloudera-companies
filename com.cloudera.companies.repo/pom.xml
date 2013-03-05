@@ -14,7 +14,8 @@
 	</parent>
 
 	<modules>
-		<module>com.cloudera.companies.repo.m2</module>
+		<module>com.cloudera.companies.repo.external</module>
+		<module>com.cloudera.companies.repo.runtime</module>
 		<module>com.cloudera.companies.repo.bom</module>
 	</modules>
 

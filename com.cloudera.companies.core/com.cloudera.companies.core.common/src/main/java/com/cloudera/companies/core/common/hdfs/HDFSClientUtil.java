@@ -10,22 +10,22 @@ import org.apache.hadoop.fs.permission.FsPermission;
 
 public class HDFSClientUtil {
 
-	public static boolean canDoAction(FileSystem fileSystem, String user, String[] groups, Path path, FsAction action)
-			throws IOException {
-		FileStatus status = fileSystem.getFileStatus(path);
-		FsPermission permission = status.getPermission();
-		if (permission.getOtherAction().implies(action)) {
-			return true;
-		}
-		for (String group : groups) {
-			if (group.equals(status.getGroup()) && permission.getGroupAction().implies(action)) {
-				return true;
-			}
-		}
-		if (user.equals(status.getOwner()) && permission.getUserAction().implies(action)) {
-			return true;
-		}
-		return false;
-	}
+  public static boolean canDoAction(FileSystem fileSystem, String user, String[] groups, Path path, FsAction action)
+      throws IOException {
+    FileStatus status = fileSystem.getFileStatus(path);
+    FsPermission permission = status.getPermission();
+    if (permission.getOtherAction().implies(action)) {
+      return true;
+    }
+    for (String group : groups) {
+      if (group.equals(status.getGroup()) && permission.getGroupAction().implies(action)) {
+        return true;
+      }
+    }
+    if (user.equals(status.getOwner()) && permission.getUserAction().implies(action)) {
+      return true;
+    }
+    return false;
+  }
 
 }

@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.cloudera.companies.repo</groupId>
-	<artifactId>com.cloudera.companies.repo.m2</artifactId>
+	<artifactId>com.cloudera.companies.repo.external</artifactId>
 	<packaging>jar</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 

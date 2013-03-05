@@ -16,77 +16,77 @@ import com.cloudera.companies.core.ingest.zip.IngestZipDriver;
 
 public class IngestDriver extends CompaniesDriverDefault {
 
-	private static Logger log = LoggerFactory.getLogger(IngestDriver.class);
+  private static Logger log = LoggerFactory.getLogger(IngestDriver.class);
 
-	private String localInputDirZip;
-	private String hdfsOutputDirZip;
-	private String hdfsOutputDirSeq;
+  private String localInputDirZip;
+  private String hdfsOutputDirZip;
+  private String hdfsOutputDirSeq;
 
-	private static AtomicBoolean isComplete = new AtomicBoolean(false);
+  private static AtomicBoolean isComplete = new AtomicBoolean(false);
 
-	public IngestDriver() {
-		super();
-	}
+  public IngestDriver() {
+    super();
+  }
 
-	public IngestDriver(Configuration conf) {
-		super(conf);
-	}
+  public IngestDriver(Configuration conf) {
+    super(conf);
+  }
 
-	@Override
-	public int prepare(String[] args) throws Exception {
+  @Override
+  public int prepare(String[] args) throws Exception {
 
-		isComplete.set(false);
+    isComplete.set(false);
 
-		if (args == null || args.length != 3) {
-			if (log.isErrorEnabled()) {
-				log.error("Usage: " + IngestDriver.class.getSimpleName()
-						+ " [generic options] <local-input-dir-zip> <hdfs-output-dir-zip> <hdfs-output-dir-seq>");
-				ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
-				PrintStream printStream = new PrintStream(byteArrayPrintStream);
-				ToolRunner.printGenericCommandUsage(printStream);
-				log.error(byteArrayPrintStream.toString());
-				printStream.close();
-			}
-			return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
-		}
+    if (args == null || args.length != 3) {
+      if (log.isErrorEnabled()) {
+        log.error("Usage: " + IngestDriver.class.getSimpleName()
+            + " [generic options] <local-input-dir-zip> <hdfs-output-dir-zip> <hdfs-output-dir-seq>");
+        ByteArrayOutputStream byteArrayPrintStream = new ByteArrayOutputStream();
+        PrintStream printStream = new PrintStream(byteArrayPrintStream);
+        ToolRunner.printGenericCommandUsage(printStream);
+        log.error(byteArrayPrintStream.toString());
+        printStream.close();
+      }
+      return CompaniesDriver.RETURN_FAILURE_MISSING_ARGS;
+    }
 
-		localInputDirZip = args[0];
-		hdfsOutputDirZip = args[1];
-		hdfsOutputDirSeq = args[2];
+    localInputDirZip = args[0];
+    hdfsOutputDirZip = args[1];
+    hdfsOutputDirSeq = args[2];
 
-		return RETURN_SUCCESS;
-	}
+    return RETURN_SUCCESS;
+  }
 
-	@Override
-	public int execute() throws Exception {
+  @Override
+  public int execute() throws Exception {
 
-		int returnValue = RETURN_FAILURE_RUNTIME;
-		IngestZipDriver ingestZipDriver = new IngestZipDriver(getConf());
-		IngestSeqDriver ingestSeqDriver = new IngestSeqDriver(getConf());
-		if ((returnValue = ingestZipDriver.run(new String[] { localInputDirZip, hdfsOutputDirZip })) == RETURN_SUCCESS) {
-			returnValue = ingestSeqDriver.run(new String[] { hdfsOutputDirZip, hdfsOutputDirSeq });
-		}
-		isComplete.set(true);
+    int returnValue = RETURN_FAILURE_RUNTIME;
+    IngestZipDriver ingestZipDriver = new IngestZipDriver(getConf());
+    IngestSeqDriver ingestSeqDriver = new IngestSeqDriver(getConf());
+    if ((returnValue = ingestZipDriver.run(new String[] { localInputDirZip, hdfsOutputDirZip })) == RETURN_SUCCESS) {
+      returnValue = ingestSeqDriver.run(new String[] { hdfsOutputDirZip, hdfsOutputDirSeq });
+    }
+    isComplete.set(true);
 
-		importCounters(ingestZipDriver.getCounters());
-		importCounters(ingestSeqDriver.getCounters());
+    importCounters(ingestZipDriver.getCounters());
+    importCounters(ingestSeqDriver.getCounters());
 
-		return returnValue;
-	}
+    return returnValue;
+  }
 
-	@Override
-	public int shutdown() {
+  @Override
+  public int shutdown() {
 
-		if (!isComplete.get()) {
-			if (log.isErrorEnabled()) {
-				log.error("Halting before completion, ingest may be only partially complete (and may contiue asyncrhonously)");
-			}
-		}
+    if (!isComplete.get()) {
+      if (log.isErrorEnabled()) {
+        log.error("Halting before completion, ingest may be only partially complete (and may contiue asyncrhonously)");
+      }
+    }
 
-		return RETURN_SUCCESS;
-	}
+    return RETURN_SUCCESS;
+  }
 
-	public static void main(String[] args) throws Exception {
-		System.exit(ToolRunner.run(new IngestDriver(), args));
-	}
+  public static void main(String[] args) throws Exception {
+    System.exit(ToolRunner.run(new IngestDriver(), args));
+  }
 }
