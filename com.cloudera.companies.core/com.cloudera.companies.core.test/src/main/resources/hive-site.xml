@@ -10,10 +10,10 @@
 	</property>
 	<property>
 		<name>hive.metastore.warehouse.dir</name>
-		<value>${dir.working.target.hdfs}/tmp/hive/warehouse</value>
+		<value>${dir.working.target.hdfs}/user/hive/warehouse</value>
 	</property>
 	<property>
 		<name>hive.exec.scratchdir</name>
-		<value>${dir.working.target.hdfs}/tmp/hive/scratch-${user.name}</value>
+		<value>${dir.working.target.hdfs}/user/hive/scratch-${user.name}</value>
 	</property>
 </configuration>

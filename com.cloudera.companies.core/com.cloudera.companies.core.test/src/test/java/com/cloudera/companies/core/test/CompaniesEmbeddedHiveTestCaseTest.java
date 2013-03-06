@@ -24,13 +24,11 @@ public class CompaniesEmbeddedHiveTestCaseTest extends CompaniesEmbeddedHiveTest
     writer.write("3,3\n");
     writer.close();
 
-    hive.execute("create table if not exists somedata  (col1 int, col2 int) row format delimited fields terminated by ',' stored as textfile");
-    hive.execute("load data local inpath '" + localDataFile.toString() + "' overwrite into table somedata");
-    hive.execute("select count(1) as cnt from somedata");
-    Assert.assertEquals("3", hive.fetchOne());
-    hive.execute("select col1 from somedata where col2 = 2");
-    Assert.assertEquals("2", hive.fetchOne());
-    hive.execute("drop table somedata");
+    execute("/com/cloudera/companies/core/test/ddl", "create.sql");
+    execute("LOAD DATA LOCAL INPATH '" + localDataFile.toString() + "' OVERWRITE INTO TABLE somedata");
+    Assert.assertEquals("3", executeAndFetchOne("SELECT count(1) AS cnt FROM somedata"));
+    Assert.assertEquals("2", executeAndFetchOne("SELECT col1 FROM somedata WHERE col2 = 2"));
+    execute("DROP TABLE somedata");
   }
 
 }

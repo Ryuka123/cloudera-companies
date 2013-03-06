@@ -50,10 +50,13 @@ public abstract class CompaniesBaseTestCase implements CompaniesBaseTest {
     if (fileSystem != null) {
       Path rootPath = new Path(CompaniesBaseTestCase.getPathHDFS("/"));
       Path tmpPath = new Path(CompaniesBaseTestCase.getPathHDFS("/tmp"));
+      Path userPath = new Path(CompaniesBaseTestCase.getPathHDFS("/user"));
       fileSystem.delete(rootPath, true);
       fileSystem.mkdirs(rootPath);
       fileSystem.mkdirs(tmpPath);
       fileSystem.setPermission(tmpPath, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
+      fileSystem.mkdirs(userPath);
+      fileSystem.setPermission(userPath, new FsPermission(FsAction.ALL, FsAction.ALL, FsAction.ALL));
     }
   }
 

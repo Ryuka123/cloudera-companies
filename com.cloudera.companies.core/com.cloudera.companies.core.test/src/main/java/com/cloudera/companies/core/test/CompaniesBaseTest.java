@@ -18,8 +18,8 @@ public interface CompaniesBaseTest {
   public static final String PATH_LOCAL_INPUT_DIR_ZIP = CompaniesBaseTestCase
       .getPathLocal("target/test-data/data/basiccompany/sample/zip");
   public static final String PATH_HDFS_OUTPUT_DIR_ZIP = CompaniesBaseTestCase
-      .getPathHDFS("test-ouput/companies/original");
+      .getPathHDFS("tmp/companies/original");
   public static final String PATH_HDFS_OUTPUT_DIR_SEQ = CompaniesBaseTestCase
-      .getPathHDFS("test-ouput/companies/processed");
+      .getPathHDFS("tmp/companies/processed");
 
 }
