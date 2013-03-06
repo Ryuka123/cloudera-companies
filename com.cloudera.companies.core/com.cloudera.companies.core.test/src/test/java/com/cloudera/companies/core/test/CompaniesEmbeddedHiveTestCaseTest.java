@@ -16,7 +16,7 @@ public class CompaniesEmbeddedHiveTestCaseTest extends CompaniesEmbeddedHiveTest
   public void testHive() throws Exception {
 
     new File(PATH_LOCAL).mkdirs();
-    File localDataFile = new File(PATH_LOCAL + "somedata.csv");
+    File localDataFile = new File(PATH_LOCAL + "/somedata.csv");
 
     BufferedWriter writer = new BufferedWriter(new FileWriter(localDataFile));
     writer.write("1,1\n");

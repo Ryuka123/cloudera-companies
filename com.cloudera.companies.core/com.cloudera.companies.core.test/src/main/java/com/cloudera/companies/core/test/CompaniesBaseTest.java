@@ -6,7 +6,7 @@ public interface CompaniesBaseTest {
 
   public static String ENV_HADOOP_HOME = "HADOOP_HOME";
 
-  public static String PATH_HADOOP_HOME = "../../com.cloudera.companies.repo/com.cloudera.companies.repo.runtime/target/test-runtime/hadoop";
+  public static String PATH_HADOOP_HOME = "target/test-runtime/hadoop";
 
   public static String PATH_HDFS = "target/test-hdfs";
   public static String PATH_LOCAL = "target/test-local";
