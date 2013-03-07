@@ -3,15 +3,15 @@
 --
 
 LOAD DATA INPATH '/Users/graham/_/dev/personal/cloudera-companies/com.cloudera.companies.core/com.cloudera.companies.core.query/target/test-hdfs/tmp/companies/processed/cleansed/2012/05/MAY-2012-r-00000'
-OVERWRITE INTO TABLE Company
+OVERWRITE INTO TABLE company
 PARTITION (
-	Year='2012',
-	Month='05'
+	snapshot_year='2012',
+	snapshot_month='05'
 );
 
 LOAD DATA INPATH '/Users/graham/_/dev/personal/cloudera-companies/com.cloudera.companies.core/com.cloudera.companies.core.query/target/test-hdfs/tmp/companies/processed/cleansed/2012/06/JUN-2012-r-00000'
-OVERWRITE INTO TABLE Company
+OVERWRITE INTO TABLE company
 PARTITION (
-	Year='2012',
-	Month='06'
+	snapshot_year='2012',
+	snapshot_month='06'
 );

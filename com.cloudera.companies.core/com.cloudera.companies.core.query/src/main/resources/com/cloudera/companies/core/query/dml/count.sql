@@ -2,6 +2,6 @@
 -- Schema Create
 --
 
-SELECT count(1) AS CompanyCount FROM Company;
+SELECT count(1) AS company_count FROM company;
 
 

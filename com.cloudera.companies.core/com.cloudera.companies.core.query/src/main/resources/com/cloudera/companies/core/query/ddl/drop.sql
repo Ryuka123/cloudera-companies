@@ -2,4 +2,4 @@
 -- Schema Destroy
 --
 
-DROP TABLE Company;
+DROP TABLE company;
