@@ -34,17 +34,19 @@ public class CompaniesHiveTest extends CompaniesEmbeddedHiveTestCase {
     Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
 
     execute("/com/cloudera/companies/core/query/ddl", "create.sql");
-    execute("/com/cloudera/companies/core/query/ddl", "load.sql");
   }
 
   @Override
   @After
   public void tearDown() throws Exception {
     super.tearDown();
-//    execute("/com/cloudera/companies/core/query/ddl", "drop.sql");
+    execute("/com/cloudera/companies/core/query/ddl", "drop.sql");
   }
 
   public void testQuery() throws Exception {
-    Assert.assertEquals("18", executeAndFetchOne("/com/cloudera/companies/core/query/dml", "count.sql"));
+    Assert.assertEquals("18",
+        executeAndFetchOne("/com/cloudera/companies/core/query/dml", "count_all_companies_all_snapshots.sql"));
+    executeAndFetchOne("/com/cloudera/companies/core/query/dml", "count_all_companies_specific_snapshot.sql");
+    executeAndFetchAll("/com/cloudera/companies/core/query/dml", "select_all_companies_all_snapshots.sql");
   }
 }

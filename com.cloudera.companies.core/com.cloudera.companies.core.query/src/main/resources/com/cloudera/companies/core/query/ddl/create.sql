@@ -2,7 +2,7 @@
 -- Schema Create
 --
 
-CREATE TABLE IF NOT EXISTS company (
+CREATE EXTERNAL TABLE IF NOT EXISTS company (
 	company_name STRING,
 	company_number STRING,
 	reg_address_care_of STRING,
@@ -63,6 +63,14 @@ PARTITIONED BY (
 	snapshot_month STRING
 )
 ROW FORMAT DELIMITED FIELDS TERMINATED BY ','
-STORED AS SEQUENCEFILE;
+STORED AS SEQUENCEFILE
+LOCATION '/Users/graham/_/dev/personal/cloudera-companies/com.cloudera.companies.core/com.cloudera.companies.core.query/target/test-hdfs/tmp/companies/processed/cleansed';
 
 MSCK REPAIR TABLE company;
+
+SHOW TABLES company;
+
+SHOW TBLPROPERTIES company;
+
+SHOW PARTITIONS company;
+

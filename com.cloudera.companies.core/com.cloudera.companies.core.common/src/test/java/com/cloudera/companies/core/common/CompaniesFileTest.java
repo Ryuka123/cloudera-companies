@@ -64,7 +64,7 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
         CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getName());
     Assert.assertEquals("./target", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
         .getDirectory());
-    Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
+    Assert.assertEquals("snapshot_year=2012/snapshot_month=05", CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent())
         .getGroup());
     Assert.assertEquals(new Date(1335830400000L),
         CompaniesFileMetaData.parsePathZip(fileZip.getName(), fileZip.getParent()).getSnapshotDate());
@@ -76,7 +76,7 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
         CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getName());
     Assert.assertEquals("./target", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
         .getDirectory());
-    Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
+    Assert.assertEquals("snapshot_year=2012/snapshot_month=05", CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent())
         .getGroup());
     Assert.assertEquals(new Date(1335830400000L),
         CompaniesFileMetaData.parsePathCSV(fileCSV.getName(), fileCSV.getParent()).getSnapshotDate());
@@ -88,7 +88,7 @@ public class CompaniesFileTest extends CompaniesBaseTestCase {
         CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getName());
     Assert.assertEquals("./target", CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
         .getDirectory());
-    Assert.assertEquals("2012/05", CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
+    Assert.assertEquals("snapshot_year=2012/snapshot_month=05", CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent())
         .getGroup());
     Assert.assertEquals(new Date(1335830400000L),
         CompaniesFileMetaData.parsePathSeq(fileReduce.getName(), fileReduce.getParent()).getSnapshotDate());

@@ -90,7 +90,7 @@ public class IngestFSCKDriverTest extends CompaniesEmbeddedCoreTestCase {
     Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
     Assert.assertEquals(CompaniesDriver.RETURN_SUCCESS,
         ingestFSCKDriver.run(new String[] { PATH_HDFS_OUTPUT_DIR_ZIP, PATH_HDFS_OUTPUT_DIR_SEQ }));
-    Assert.assertEquals(false, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
+    Assert.assertEquals(true, ingestFSCKDriver.testIntegretity(2, 8, 3).isEmpty());
   }
 
   @Test

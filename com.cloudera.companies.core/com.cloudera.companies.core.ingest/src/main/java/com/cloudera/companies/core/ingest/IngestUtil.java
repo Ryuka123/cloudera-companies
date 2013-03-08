@@ -18,8 +18,8 @@ public class IngestUtil {
     FILES_VALID, FILES_ERROR, FILES_PARTIAL, FILES_UNKNOWN, FILES_CLEANED,
 
     // Record action counters
-    RECORDS, RECORDS_VALID("cleansed"), RECORDS_MALFORMED("erroneous/malformed"), RECORDS_DUPLICATE(
-        "erroneous/duplicate");
+    RECORDS, RECORDS_VALID("cleansed/"), RECORDS_MALFORMED("erroneous/malformed/"), RECORDS_DUPLICATE(
+        "erroneous/duplicate/");
 
     private String path;
 
@@ -51,8 +51,7 @@ public class IngestUtil {
       if (counter == null) {
         return CompaniesFileMetaData.parsePathGroup(group) != null;
       } else {
-        return group.length() > counter.getPath().length() + 1 && group.indexOf(counter.getPath()) == 0
-            && CompaniesFileMetaData.parsePathGroup(group.substring(counter.getPath().length() + 1)) != null;
+        return CompaniesFileMetaData.parsePathGroup(group.replaceFirst(counter.getPath(), "")) != null;
       }
     } catch (Exception e) {
       return false;
@@ -60,7 +59,7 @@ public class IngestUtil {
   }
 
   public static String getNamespacedPath(Counter counter, String group) throws IOException {
-    return counter.getPath() + (group == null ? "" : "/" + group);
+    return counter.getPath() + (group == null ? "" : group);
   }
 
   public static String getNamespacedPathFile(Counter counter, String group) throws IOException {

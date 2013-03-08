@@ -18,7 +18,11 @@ public class CompaniesFileMetaData {
   public static final String FILE_ESCAPE_CHAR_ESCAPED = FILE_ESCAPE_CHAR + FILE_ESCAPE_CHAR;
 
   private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
-  private static final String DATE_FORMAT_GROUP = "yyyy/MM";
+  private static final String DATE_FORMAT_GROUP_YEAR = "yyyy";
+  private static final String DATE_FORMAT_GROUP_YEAR_PREFIX = "snapshot_year=";
+  private static final String DATE_FORMAT_GROUP_MONTH = "MM";
+  private static final String DATE_FORMAT_GROUP = DATE_FORMAT_GROUP_YEAR + "/" + DATE_FORMAT_GROUP_MONTH;
+  private static final String DATE_FORMAT_GROUP_MONTH_PREFIX = "snapshot_month=";
   private static final String DATE_FORMAT_FILE_NAME_OUTPUT = "MMM-yyyy";
 
   private static final String FILE_NAME_REGEX_BASE = "BasicCompanyData-(20[0-9][0-9]-[0-1][0-9]-[0-3][0-9])-part([1-9])_([1-9])";
@@ -60,13 +64,12 @@ public class CompaniesFileMetaData {
     if (fileNameMatcher.matches()) {
       try {
         if (fileNameMatcher.groupCount() == 3) {
-          return new CompaniesFileMetaData(name, directory, getDateFormat(DATE_FORMAT_GROUP).format(
-              getDateFormat(formatDate).parse(fileNameMatcher.group(1))), Integer.parseInt(fileNameMatcher.group(2)),
-              Integer.parseInt(fileNameMatcher.group(3)), getDateFormat(formatDate).parse(fileNameMatcher.group(1)));
+          return new CompaniesFileMetaData(name, directory, getPathGroup(formatDate, fileNameMatcher.group(1)),
+              Integer.parseInt(fileNameMatcher.group(2)), Integer.parseInt(fileNameMatcher.group(3)), getDateFormat(
+                  formatDate).parse(fileNameMatcher.group(1)));
         } else if (fileNameMatcher.groupCount() == 1) {
-          return new CompaniesFileMetaData(name, directory, getDateFormat(DATE_FORMAT_GROUP).format(
-              getDateFormat(formatDate).parse(fileNameMatcher.group(1))), 1, 1, getDateFormat(formatDate).parse(
-              fileNameMatcher.group(1)));
+          return new CompaniesFileMetaData(name, directory, getPathGroup(formatDate, fileNameMatcher.group(1)), 1, 1,
+              getDateFormat(formatDate).parse(fileNameMatcher.group(1)));
         }
 
       } catch (Exception e) {
@@ -76,13 +79,21 @@ public class CompaniesFileMetaData {
     throw new IOException("File name [" + name + "] did not match regex specification [" + patternPath + "]");
   }
 
+  private static String getPathGroup(String formatDate, String snapshotDate) throws IOException, ParseException {
+    return DATE_FORMAT_GROUP_YEAR_PREFIX
+        + getDateFormat(DATE_FORMAT_GROUP_YEAR).format(getDateFormat(formatDate).parse(snapshotDate)) + "/"
+        + DATE_FORMAT_GROUP_MONTH_PREFIX
+        + getDateFormat(DATE_FORMAT_GROUP_MONTH).format(getDateFormat(formatDate).parse(snapshotDate));
+  }
+
   public static Date parsePathGroup(String group) throws IOException {
     if (group == null) {
       throw new IllegalArgumentException("null group");
     }
     Date date = null;
     try {
-      date = getDateFormat(DATE_FORMAT_GROUP).parse(group);
+      date = getDateFormat(DATE_FORMAT_GROUP).parse(
+          group.replaceFirst(DATE_FORMAT_GROUP_YEAR_PREFIX, "").replaceFirst(DATE_FORMAT_GROUP_MONTH_PREFIX, ""));
     } catch (ParseException exception) {
       throw new IOException("Could not parse group", exception);
     }

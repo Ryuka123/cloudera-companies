@@ -13,8 +13,12 @@ import org.apache.hadoop.hive.service.HiveServerException;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCoreTestCase {
+
+  private static Logger log = LoggerFactory.getLogger(CompaniesEmbeddedHiveTestCase.class);
 
   private HiveInterface hive;
 
@@ -37,34 +41,73 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
   }
 
   public void execute(String query) throws HiveServerException, TException {
-    hive.execute(query);
+    _execute(query);
   }
 
-  public List<String> executeAndFetch(String query) throws HiveServerException, TException {
+  public List<String> executeAndFetchAll(String query) throws HiveServerException, TException {
     execute(query);
-    return hive.fetchAll();
+    return _fetchAll(query);
   }
 
   public String executeAndFetchOne(String query) throws HiveServerException, TException {
     execute(query);
-    return hive.fetchOne();
+    return _fetchOne(query);
   }
 
-  public void execute(String directory, String file) throws HiveServerException, TException, IOException {
+  public String execute(String directory, String file) throws HiveServerException, TException, IOException {
+    String lastQuery = null;
     for (String query : readColonDelimiteredLinesFromFileOnClasspath(directory, file)) {
-      hive.execute(query);
+      hive.execute(lastQuery = query);
     }
+    return lastQuery;
   }
 
-  public List<String> executeAndFetch(String directory, String file) throws HiveServerException, TException,
+  public List<String> executeAndFetchAll(String directory, String file) throws HiveServerException, TException,
       IOException {
-    execute(directory, file);
-    return hive.fetchAll();
+    return _fetchAll(execute(directory, file));
   }
 
   public String executeAndFetchOne(String directory, String file) throws HiveServerException, TException, IOException {
-    execute(directory, file);
-    return hive.fetchOne();
+    return _fetchOne(execute(directory, file));
+  }
+
+  private void _execute(String query) throws HiveServerException, TException {
+    if (log.isDebugEnabled()) {
+      log.debug("Hive client test pre-execute:\n" + query + "\n");
+    }
+    hive.execute(query);
+    if (log.isDebugEnabled()) {
+      log.debug("Hive client test post-execute:\n" + query + "\n");
+    }
+  }
+
+  private List<String> _fetchAll(String query) throws HiveServerException, TException {
+    List<String> rows = hive.fetchAll();
+    if (log.isDebugEnabled()) {
+      StringBuilder rowsString = new StringBuilder();
+      rowsString.append("Hive client test fetched results:\n" + query + "\n");
+      for (String row : rows) {
+        rowsString.append('\n');
+        rowsString.append(row);
+      }
+      rowsString.append('\n');
+      log.debug(rowsString.toString());
+    }
+    return rows;
+  }
+
+  private String _fetchOne(String query) throws HiveServerException, TException {
+    String row = hive.fetchOne();
+    if (log.isDebugEnabled()) {
+      StringBuilder rowsString = new StringBuilder();
+      rowsString.append("Hive client test fetched results:\n" + query + "\n");
+      rowsString.append('\n');
+      rowsString.append(row);
+      rowsString.append('\n');
+      log.debug(rowsString.toString());
+    }
+    return row;
+
   }
 
   private List<String> readColonDelimiteredLinesFromFileOnClasspath(String directory, String file) throws IOException {
