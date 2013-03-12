@@ -67,19 +67,18 @@ public class CompaniesHiveTest extends CompaniesEmbeddedHiveTestCase {
 
   public void testQuery() throws Exception {
 
-    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "18" }), Arrays.asList(new String[] { "9" }) },
+    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "9" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "count.sql").toArray());
 
-    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "1" }), Arrays.asList(new String[] { "1" }) },
+    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "1" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "duplicate.sql").toArray());
 
-    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "4" }), Arrays.asList(new String[] { "3" }) },
+    Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "3" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "malformed.sql").toArray());
 
     Assert
         .assertArrayEquals(
             new List[] {
-                Arrays.asList(new String[] { "2" }),
                 Arrays.asList(new String[] { "1" }),
                 Arrays
                     .asList(new String[] { "\"01 PROPERTY INVESTMENT LTD\"	\"06291865\"	\"\"	\"\"	\"64 ST. JAMES'S STREET\"	\"\"	\"BRIGHTON\"	\"EAST SUSSEX\"	\"ENGLAND\"	\"BN2 1PJ\"	\"Private Limited Company\"	\"Active\"	\"United Kingdom\"	\"\"	\"25/06/2007\"	\"30\"	\"6\"	\"31/03/2013\"	\"30/06/2011\"	\"TOTAL EXEMPTION SMALL\"	\"23/07/2012\"	\"25/06/2011\"	\"5\"	\"5\"	\"0\"	\"0\"	\"7020 - Letting of own property\"	\"\"	\"\"	\"\"	\"0\"	\"0\"	\"http://business.data.gov.uk/id/company/06291865\"	\"26/07/2011\"	\"01 PROPERTY LTD\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	\"\"	2012	05" }) },
