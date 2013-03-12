@@ -5,8 +5,6 @@ export COMPANIES_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )""/.."
 
 source "$COMPANIES_DIR/bin/companies.env"
 
-set -x
-
 line_item_header "COUNT"
 hive -f "$COMPANIES_DIR/lib/query/com/cloudera/companies/core/query/dml/count.sql"
 line_item_header ""
