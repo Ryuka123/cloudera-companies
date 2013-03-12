@@ -35,5 +35,19 @@
 				<include>*:com.cloudera.companies.core.ingest</include>
 			</includes>
 		</dependencySet>
+		<dependencySet>
+			<outputDirectory>/lib/query</outputDirectory>
+			<fileMode>0644</fileMode>
+			<directoryMode>0755</directoryMode>
+			<includes>
+				<include>*:com.cloudera.companies.core.query</include>
+			</includes>
+			<unpack>true</unpack>
+			<unpackOptions>
+				<excludes>
+					<exclude>META-INF/**</exclude>
+				</excludes>
+			</unpackOptions>
+		</dependencySet>
 	</dependencySets>
 </assembly>

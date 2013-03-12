@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.service.HiveInterface;
 import org.apache.hadoop.hive.service.HiveServer;
 import org.apache.hadoop.hive.service.HiveServerException;
@@ -21,6 +23,7 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
   private static Logger log = LoggerFactory.getLogger(CompaniesEmbeddedHiveTestCase.class);
 
   private HiveInterface hive;
+  private HiveConf hiveConf;
 
   public CompaniesEmbeddedHiveTestCase() throws IOException {
     super();
@@ -30,14 +33,19 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    hive = new HiveServer.HiveServerHandler();
+    hive = new HiveServer.HiveServerHandler(getConf());
   }
 
   @After
   @Override
   public void tearDown() throws Exception {
     hive.shutdown();
+    hiveConf = null;
     super.tearDown();
+  }
+
+  public HiveConf getConf() throws TException {
+    return hiveConf == null ? hiveConf = new HiveConf(SessionState.class) : hiveConf;
   }
 
   public void execute(String query) throws HiveServerException, TException {
