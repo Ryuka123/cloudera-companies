@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -53,30 +54,29 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
   }
 
   public List<String> executeAndFetchAll(String query) throws HiveServerException, TException {
-    execute(query);
+    _execute(query);
     return _fetchAll(query);
   }
 
   public String executeAndFetchOne(String query) throws HiveServerException, TException {
-    execute(query);
+    _execute(query);
     return _fetchOne(query);
   }
 
-  public String execute(String directory, String file) throws HiveServerException, TException, IOException {
-    String lastQuery = null;
+  public void execute(String directory, String file) throws HiveServerException, TException, IOException {
     for (String query : readColonDelimiteredLinesFromFileOnClasspath(directory, file)) {
-      hive.execute(lastQuery = query);
+      _execute(query);
     }
-    return lastQuery;
   }
 
-  public List<String> executeAndFetchAll(String directory, String file) throws HiveServerException, TException,
+  public List<List<String>> executeAndFetchAll(String directory, String file) throws HiveServerException, TException,
       IOException {
-    return _fetchAll(execute(directory, file));
-  }
-
-  public String executeAndFetchOne(String directory, String file) throws HiveServerException, TException, IOException {
-    return _fetchOne(execute(directory, file));
+    List<List<String>> rows = new ArrayList<List<String>>();
+    for (String query : readColonDelimiteredLinesFromFileOnClasspath(directory, file)) {
+      _execute(query);
+      rows.add(_fetchAll(query));
+    }
+    return rows;
   }
 
   private void _execute(String query) throws HiveServerException, TException {
@@ -89,8 +89,7 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
     }
   }
 
-  private List<String> _fetchAll(String query) throws HiveServerException, TException {
-    List<String> rows = hive.fetchAll();
+  private List<String> _fetch(String query, List<String> rows) throws HiveServerException, TException {
     if (log.isDebugEnabled()) {
       StringBuilder rowsString = new StringBuilder();
       rowsString.append("Hive client test fetched results:\n" + query + "\n");
@@ -104,18 +103,12 @@ public abstract class CompaniesEmbeddedHiveTestCase extends CompaniesEmbeddedCor
     return rows;
   }
 
-  private String _fetchOne(String query) throws HiveServerException, TException {
-    String row = hive.fetchOne();
-    if (log.isDebugEnabled()) {
-      StringBuilder rowsString = new StringBuilder();
-      rowsString.append("Hive client test fetched results:\n" + query + "\n");
-      rowsString.append('\n');
-      rowsString.append(row);
-      rowsString.append('\n');
-      log.debug(rowsString.toString());
-    }
-    return row;
+  private List<String> _fetchAll(String query) throws HiveServerException, TException {
+    return _fetch(query, hive.fetchAll());
+  }
 
+  private String _fetchOne(String query) throws HiveServerException, TException {
+    return _fetch(query, Arrays.asList(new String[] { hive.fetchOne() })).get(0);
   }
 
   private List<String> readColonDelimiteredLinesFromFileOnClasspath(String directory, String file) throws IOException {
