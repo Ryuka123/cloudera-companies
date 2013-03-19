@@ -31,6 +31,8 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
       + INPUT_NAME
       + "\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\",\"\"";
   private static final Text INPUT_RECORD_TEXT = new Text(INPUT_RECORD);
+  private static final String OUTPUT_RECORD = INPUT_NAME + ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,";
+  private static final Text OUTPUT_RECORD_TEXT = new Text(OUTPUT_RECORD);
 
   public IngestSeqMapReduceTest() throws IOException {
   }
@@ -47,7 +49,7 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
   @Test
   public void testMapperValid() {
     mapDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
-    mapDriver.withOutput(INPUT_KEY, INPUT_RECORD_TEXT);
+    mapDriver.withOutput(INPUT_KEY, OUTPUT_RECORD_TEXT);
     mapDriver.runTest();
     Assert.assertEquals(1, mapDriver.getCounters().findCounter(Counter.RECORDS_VALID).getValue());
   }
@@ -55,16 +57,16 @@ public class IngestSeqMapReduceTest extends CompaniesBaseTestCase {
   @Test
   public void testReducer() {
     List<Text> values = new ArrayList<Text>();
-    values.add(INPUT_RECORD_TEXT);
+    values.add(OUTPUT_RECORD_TEXT);
     reduceDriver.withInput(INPUT_KEY, values);
-    reduceDriver.withOutput(INPUT_NAME_TEXT, INPUT_RECORD_TEXT);
+    reduceDriver.withOutput(INPUT_NAME_TEXT, OUTPUT_RECORD_TEXT);
     reduceDriver.runTest();
   }
 
   @Test
   public void testMapReduce() {
     mapReduceDriver.withInput(INPUT_GROUP_TEXT, INPUT_RECORD_TEXT);
-    mapReduceDriver.withOutput(INPUT_NAME_TEXT, INPUT_RECORD_TEXT);
+    mapReduceDriver.withOutput(INPUT_NAME_TEXT, OUTPUT_RECORD_TEXT);
     mapReduceDriver.runTest();
   }
 

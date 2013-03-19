@@ -14,8 +14,9 @@ public class CompaniesFileMetaData {
 
   public static final int FILE_FIELDS_NUMBER = 53;
 
-  public static final String FILE_ESCAPE_CHAR = "@";
+  public static final String FILE_ESCAPE_CHAR = "\\";
   public static final String FILE_ESCAPE_CHAR_ESCAPED = FILE_ESCAPE_CHAR + FILE_ESCAPE_CHAR;
+  public static final String FILE_COLUMN_DELIM = ",";
 
   private static final String DATE_FORMAT_FILE_NAME = "yyyy-MM-dd";
   private static final String DATE_FORMAT_GROUP_YEAR = "yyyy";
@@ -108,6 +109,22 @@ public class CompaniesFileMetaData {
     // Investigate using faster, single pass parsing routine, without the
     // need to pre-escape escape sequences
     return FILE_RECORD_PARSER.parseLine(record.replace(FILE_ESCAPE_CHAR, FILE_ESCAPE_CHAR_ESCAPED));
+  }
+
+  public static String parseRecordEscaped(String record) throws IOException {
+    return parseRecordEscaped(parseRecord(record));
+  }
+
+  public static String parseRecordEscaped(String[] record) throws IOException {
+    StringBuilder recordEscaped = new StringBuilder(1024);
+    for (String recordCollumn : record) {
+      if (recordEscaped.length() > 0) {
+        recordEscaped.append(FILE_COLUMN_DELIM);
+      }
+      recordEscaped.append(recordCollumn.replace(FILE_ESCAPE_CHAR, FILE_ESCAPE_CHAR + FILE_ESCAPE_CHAR).replace(
+          FILE_COLUMN_DELIM, FILE_ESCAPE_CHAR + FILE_COLUMN_DELIM));
+    }
+    return recordEscaped.toString();
   }
 
   private static DateFormat getDateFormat(String format) {

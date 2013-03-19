@@ -27,7 +27,8 @@ public class IngestSeqMapper extends Mapper<Text, Text, CompaniesFileKey, Text> 
           : recordTokens[0]), new Text(value));
     } else {
       context.getCounter(Counter.RECORDS_VALID).increment(1);
-      context.write(new CompaniesFileKey(Counter.RECORDS_VALID, key.toString(), recordTokens[0]), new Text(value));
+      context.write(new CompaniesFileKey(Counter.RECORDS_VALID, key.toString(), recordTokens[0]), new Text(
+          CompaniesFileMetaData.parseRecordEscaped(recordTokens)));
     }
   }
 

@@ -14,7 +14,7 @@ WHERE
 --
 
 SELECT
-  *
+  company_name
 FROM company
 WHERE
   upper(company_name) LIKE '%01 PROPERTY INVESTMENT%' AND
