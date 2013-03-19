@@ -79,7 +79,7 @@
 								<symlink
 									link="${project.build.directory}/${project.runtime-test-dir}/hadoop"
 									resource="../../../../com.cloudera.companies.repo/com.cloudera.companies.repo.runtime/target/test-runtime/hadoop"
-									failonerror="false" />
+									failonerror="false" overwrite="true" />
 							</target>
 						</configuration>
 						<goals>
