@@ -26,7 +26,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.cloudera.companies.repo</groupId>
-			<artifactId>com.cloudera.companies.repo.m2</artifactId>
+			<artifactId>com.cloudera.companies.repo.external</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
 		</dependency>
