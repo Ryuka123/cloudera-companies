@@ -53,13 +53,13 @@
 									link="${project.build.directory}/${project.runtime-test-dir}/hadoop"
 									resource="${project.build.directory}/${project.runtime-test-dir}/hadoop-${hadoop.version}"
 									failonerror="false" overwrite="true" />
-								<mkdir dir="${project.build.directory}/${project.runtime-test-dir}/hadoop/etc/hadoop" />								
 								<echo
 									file="${project.build.directory}/${project.runtime-test-dir}/hadoop/etc/hadoop/hadoop-env.sh"
 									append="true">									
 									export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx${project.runtime.heap.max}m"
 								</echo>
 							</target>
+							<skip>${maven.test.skip}</skip>
 						</configuration>
 						<goals>
 							<goal>run</goal>
