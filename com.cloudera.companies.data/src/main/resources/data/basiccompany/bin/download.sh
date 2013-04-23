@@ -28,6 +28,6 @@ function download() {
 	done
 }
 
-cd $DIR_BASE/warehouse/zip
+cd $DIR_BASE/warehouse/bak
 download 2012 2012 5 12 4
 download 2013 2013 1 12 4
