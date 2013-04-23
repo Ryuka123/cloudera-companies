@@ -75,7 +75,6 @@ public class CompaniesHiveTest extends CompaniesEmbeddedHiveTestCase {
 
     Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "3" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "malformed.sql").toArray());
-
     Assert
         .assertArrayEquals(
             new List[] { Arrays.asList(new String[] { "1" }),
