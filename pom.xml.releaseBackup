@@ -7,9 +7,9 @@
 	<version>1.0.0-SNAPSHOT</version>
 
 	<scm>
-		<connection>scm:git:git@github.com:ggear/cloudera-companies.git</connection>
-		<url>scm:git:git@github.com:ggear/cloudera-companies.git</url>
-		<developerConnection>scm:git:git@github.com:ggear/cloudera-companies.git</developerConnection>
+		<connection>scm:git:git://github.com/ggear/cloudera-companies.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:ggear/cloudera-companies.git</developerConnection>
+		<url>https://github.com/ggear/cloudera-companies</url>
 	</scm>
 
 	<repositories>
