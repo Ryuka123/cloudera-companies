@@ -5,12 +5,12 @@
 	<groupId>com.cloudera.companies</groupId>
 	<artifactId>com.cloudera.companies.data</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<parent>
 		<groupId>com.cloudera</groupId>
 		<artifactId>com.cloudera.companies</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0-SNAPSHOT</version>
 	</parent>
 
 	<build>
