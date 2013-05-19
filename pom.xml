@@ -6,6 +6,12 @@
 	<packaging>pom</packaging>
 	<version>1.0.0-SNAPSHOT</version>
 
+	<scm>
+		<connection>scm:git:git://github.com/ggear/cloudera-companies.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:ggear/cloudera-companies.git</developerConnection>
+		<url>https://github.com/ggear/cloudera-companies</url>
+	</scm>
+
 	<repositories>
 		<repository>
 			<id>cdh.repo</id>
