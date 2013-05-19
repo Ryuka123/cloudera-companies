@@ -12,6 +12,12 @@
 		<developerConnection>scm:git:git@github.com:ggear/cloudera-companies.git</developerConnection>
 	</scm>
 
+	<distributionManagement>
+		<site>
+			<url>scm:git:git@github.com:ggear/cloudera-companies.git</url>
+		</site>
+	</distributionManagement>
+
 	<repositories>
 		<repository>
 			<id>cdh.repo</id>
