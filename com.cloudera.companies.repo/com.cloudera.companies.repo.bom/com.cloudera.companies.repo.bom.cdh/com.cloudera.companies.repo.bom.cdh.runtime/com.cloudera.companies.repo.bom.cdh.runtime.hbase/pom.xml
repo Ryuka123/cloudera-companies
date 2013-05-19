@@ -4,12 +4,12 @@
 	<groupId>com.cloudera.companies.repo.bom.cdh.runtime</groupId>
 	<artifactId>com.cloudera.companies.repo.bom.cdh.runtime.hbase</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>com.cloudera.companies.repo.bom.cdh</groupId>
 		<artifactId>com.cloudera.companies.repo.bom.cdh.runtime</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
 </project>

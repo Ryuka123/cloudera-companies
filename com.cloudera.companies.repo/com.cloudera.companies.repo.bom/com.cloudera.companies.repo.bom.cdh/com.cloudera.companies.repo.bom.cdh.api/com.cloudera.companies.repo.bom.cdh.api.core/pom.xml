@@ -4,12 +4,12 @@
 	<groupId>com.cloudera.companies.repo.bom.cdh.api</groupId>
 	<artifactId>com.cloudera.companies.repo.bom.cdh.api.core</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>com.cloudera.companies.repo.bom.cdh</groupId>
 		<artifactId>com.cloudera.companies.repo.bom.cdh.api</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>

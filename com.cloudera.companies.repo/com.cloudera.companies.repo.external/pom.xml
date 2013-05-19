@@ -4,12 +4,12 @@
 	<groupId>com.cloudera.companies.repo</groupId>
 	<artifactId>com.cloudera.companies.repo.external</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>com.cloudera.companies</groupId>
 		<artifactId>com.cloudera.companies.repo</artifactId>
-		<version>1.0.0</version>
+		<version>1.0.1-SNAPSHOT</version>
 	</parent>
 
 	<build>
