@@ -1,2 +1,0 @@
-Cloudera Companies Readme
-=========================
