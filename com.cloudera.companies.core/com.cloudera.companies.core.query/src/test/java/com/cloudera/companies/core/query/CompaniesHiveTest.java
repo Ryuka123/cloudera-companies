@@ -66,19 +66,16 @@ public class CompaniesHiveTest extends CompaniesEmbeddedHiveTestCase {
   }
 
   public void testQuery() throws Exception {
-
     Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "9" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "count.sql").toArray());
 
     Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "1" }), Arrays.asList(new String[] { "1" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "duplicate.sql").toArray());
-
     Assert.assertArrayEquals(new List[] { Arrays.asList(new String[] { "3" }) },
         executeAndFetchAll("/com/cloudera/companies/core/query/dml", "malformed.sql").toArray());
-    Assert
-        .assertArrayEquals(
-            new List[] { Arrays.asList(new String[] { "1" }),
-                Arrays.asList(new String[] { "01 PROPERTY INVESTMENT LTD" }) },
-            executeAndFetchAll("/com/cloudera/companies/core/query/dml", "select.sql").toArray());
+    Assert.assertArrayEquals(
+        new List[] { Arrays.asList(new String[] { "1" }),
+            Arrays.asList(new String[] { "01 PROPERTY \", INVESTMENT LTD" }) },
+        executeAndFetchAll("/com/cloudera/companies/core/query/dml", "select.sql").toArray());
   }
 }
