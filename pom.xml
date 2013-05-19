@@ -116,6 +116,7 @@
 	</profiles>
 
 	<modules>
+		<module>com.cloudera.companies.docs</module>
 		<module>com.cloudera.companies.repo</module>
 		<module>com.cloudera.companies.data</module>
 		<module>com.cloudera.companies.core</module>
